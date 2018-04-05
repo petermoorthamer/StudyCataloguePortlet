@@ -2,6 +2,9 @@ package com.jnj.honeur.service;
 
 import com.jnj.honeur.model.Notebook;
 import com.jnj.honeur.model.Study;
+import com.liferay.portal.kernel.search.Indexable;
+import com.liferay.portal.kernel.search.IndexableType;
+import org.osgi.service.component.annotations.Component;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -10,6 +13,7 @@ import java.util.Optional;
 /**
  * Temporary implementation for testing
  */
+@Component
 public class StudyServiceFacade {
 
     private List<Study> studies = new ArrayList<>();
@@ -18,10 +22,21 @@ public class StudyServiceFacade {
     private long notebookCnt = 0;
 
 
+    @Indexable(type = IndexableType.REINDEX)
     public Study createStudy(Study study) {
         study.setId(++studyCnt);
         studies.add(study);
         return study;
+    }
+
+    @Indexable(type = IndexableType.REINDEX)
+    public Study saveStudy(Study study) {
+        return study;
+    }
+
+    @Indexable(type = IndexableType.DELETE)
+    public void deleteStudy(Study study) {
+
     }
 
     public List<Study> findStudies() {
@@ -36,13 +51,9 @@ public class StudyServiceFacade {
         return null;
     }
 
-    public Study saveStudy(Study study) {
-        return study;
-    }
 
-    public void deleteStudy(Study study) {
 
-    }
+
 
 
     public Notebook createNotebook(Study study, Notebook notebook) {

@@ -1,18 +1,16 @@
 package com.jnj.honeur.portlet;
 
 import com.jnj.honeur.constants.StudyCataloguePortletKeys;
-
 import com.jnj.honeur.model.Notebook;
+import com.jnj.honeur.model.Study;
 import com.jnj.honeur.service.StudyServiceFacade;
 import com.liferay.portal.kernel.portlet.bridges.mvc.MVCPortlet;
-
-import javax.portlet.*;
-
 import com.liferay.portal.kernel.util.ParamUtil;
 import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
 
+import javax.portlet.*;
 import java.io.IOException;
-import java.util.List;
 
 /**
  * @author Peter Moorthamer
@@ -33,21 +31,28 @@ import java.util.List;
 )
 public class StudyCataloguePortlet extends MVCPortlet {
 
-	private static final String STUDY_NOTEBOOKS = "studyNotebooks";
+    private static final String STUDIES = "studies";
+    private static final String STUDY_NOTEBOOKS = "studyNotebooks";
 
-	private StudyServiceFacade studyServiceFacade = new StudyServiceFacade();
-
-
+	@Reference
+    private StudyServiceFacade studyServiceFacade;
 
 	@Override
 	public void render(RenderRequest renderRequest, RenderResponse renderResponse) throws PortletException, IOException {
 
-		List<Notebook> notebooks = studyServiceFacade.findStudyNotebooks(null);
-
-		renderRequest.setAttribute(STUDY_NOTEBOOKS, notebooks);
+        renderRequest.setAttribute(STUDIES, studyServiceFacade.findStudies());
+		renderRequest.setAttribute(STUDY_NOTEBOOKS, studyServiceFacade.findStudyNotebooks(null));
 
 		super.render(renderRequest, renderResponse);
 	}
+
+    public void addStudy(ActionRequest request, ActionResponse response) {
+        PortletPreferences prefs = request.getPreferences();
+        String studyName = ParamUtil.getString(request, "studyName");
+        Study study = new Study();
+        study.setName(studyName);
+        studyServiceFacade.createStudy(study);
+    }
 
 
 

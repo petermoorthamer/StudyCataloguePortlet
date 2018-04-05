@@ -1,35 +1,50 @@
 <%@ include file="/init.jsp" %>
 
-<p>
-	<b><liferay-ui:message key="study-catalogue-portlet.caption"/></b>
-</p>
+<h1><liferay-ui:message key="study-catalogue-portlet.caption"/></h1>
 
-<portlet:renderURL var="notebookDetailsURL">
-	<portlet:param name="mvcPath" value="/notebook-details.jsp"></portlet:param>
-</portlet:renderURL>
+<portlet:actionURL name="addStudy" var="addStudyURL"></portlet:actionURL>
 
-<portlet:actionURL name="addNotebook" var="addNotebookURL"></portlet:actionURL>
+<liferay-portlet:renderURL varImpl="searchURL">
+    <portlet:param name="mvcPath" value="/view_search.jsp" />
+</liferay-portlet:renderURL>
 
-<jsp:useBean id="studyNotebooks" class="java.util.ArrayList" scope="request"/>
+<aui:form action="<%= searchURL %>" method="get" name="<portlet:namespace />searchfm">
+    <liferay-portlet:renderURLParams varImpl="searchURL" />
+
+    <div class="search-form">
+        <span class="aui-search-bar">
+            <aui:input inlineField="<%= true %>" label=""
+                       name="keywords" size="30" title="search-entries" type="text"
+            />
+
+            <aui:button type="submit" value="search" />
+        </span>
+    </div>
+</aui:form>
+
+<jsp:useBean id="studies" class="java.util.ArrayList" scope="request"/>
+
+<h3>Studies</h3>
 
 <liferay-ui:search-container>
-    <liferay-ui:search-container-results results="<%= studyNotebooks %>" />
+    <liferay-ui:search-container-results results="<%= studies %>" />
 
     <liferay-ui:search-container-row
-            className="com.jnj.honeur.model.Notebook"
-            modelVar="notebook">
+            className="com.jnj.honeur.model.Study"
+            modelVar="study">
 
-        <liferay-ui:search-container-column-text property="url"  />
+        <liferay-ui:search-container-column-text property="name"  />
 
     </liferay-ui:search-container-row>
 
     <liferay-ui:search-iterator />
 </liferay-ui:search-container>
 
+<h3>Add study</h3>
 
-<aui:form action="<%= addNotebookURL %>" name="<portlet:namespace />fm">
+<aui:form action="<%= addStudyURL %>" name="<portlet:namespace />fm">
     <aui:fieldset>
-        <aui:input name="notebookUrl"></aui:input>
+        <aui:input name="studyName"></aui:input>
     </aui:fieldset>
 
     <aui:button-row>
@@ -37,6 +52,4 @@
     </aui:button-row>
 </aui:form>
 
-<aui:button-row>
-	<aui:button value="notebook details" onClick="<%= notebookDetailsURL.toString() %>"></aui:button>
-</aui:button-row>
+
