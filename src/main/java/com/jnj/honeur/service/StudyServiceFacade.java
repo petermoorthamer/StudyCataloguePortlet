@@ -5,12 +5,12 @@ import com.jnj.honeur.model.Study;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Temporary implementation for testing
  */
 public class StudyServiceFacade {
-
 
     private List<Study> studies = new ArrayList<>();
     private long studyCnt = 0;
@@ -19,13 +19,21 @@ public class StudyServiceFacade {
 
 
     public Study createStudy(Study study) {
-        study.setId(studyCnt++);
+        study.setId(++studyCnt);
         studies.add(study);
         return study;
     }
 
     public List<Study> findStudies() {
         return studies;
+    }
+
+    public Study findStudyById(final Long id) {
+        Optional<Study> study = studies.stream().filter(s -> s.getId().equals(id)).findFirst();
+        if(study.isPresent()) {
+            return study.get();
+        }
+        return null;
     }
 
     public Study saveStudy(Study study) {
