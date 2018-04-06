@@ -2,6 +2,7 @@ package com.jnj.honeur.service;
 
 import com.jnj.honeur.model.Notebook;
 import com.jnj.honeur.model.Study;
+import com.jnj.honeur.model.StudyModel;
 import com.liferay.portal.kernel.search.Indexable;
 import com.liferay.portal.kernel.search.IndexableType;
 import org.osgi.service.component.annotations.Component;
@@ -17,14 +18,21 @@ import java.util.Optional;
 public class StudyServiceFacade {
 
     private static final StudyServiceFacade INSTANCE = new StudyServiceFacade();
+    private long companyId;
 
     private List<Study> studies = new ArrayList<>();
     private long studyCnt = 0;
     private List<Notebook> notebooks = new ArrayList<>();
     private long notebookCnt = 0;
+    private List<StudyModel> studyModels = new ArrayList<>();
+    private long studyModelCnt = 0;
 
     public static StudyServiceFacade getInstance() {
         return INSTANCE;
+    }
+
+    public void setCompanyId(Long companyId) {
+        this.companyId = companyId;
     }
 
     @Indexable(type = IndexableType.REINDEX)
@@ -50,16 +58,41 @@ public class StudyServiceFacade {
 
     public Study findStudyById(final Long id) {
         Optional<Study> study = studies.stream().filter(s -> s.getId().equals(id)).findFirst();
-        if(study.isPresent()) {
+        if (study.isPresent()) {
             return study.get();
         }
         return null;
     }
 
+    @Indexable(type = IndexableType.REINDEX)
+    public StudyModel createStudyModel(StudyModel studyModel) {
+        studyModel.setId(++studyModelCnt);
+        studyModel.setCompanyId(this.companyId);
+        studyModels.add(studyModel);
+        return studyModel;
+    }
 
+    @Indexable(type = IndexableType.REINDEX)
+    public StudyModel saveStudyModel(StudyModel studyModel) {
+        return studyModel;
+    }
 
+    @Indexable(type = IndexableType.DELETE)
+    public void deleteStudyModel(StudyModel studyModel) {
 
+    }
 
+    public List<StudyModel> findStudyModels() {
+        return studyModels;
+    }
+
+    public StudyModel findStudyModelById(final Long id) {
+        Optional<StudyModel> studyModel = studyModels.stream().filter(s -> s.getId().equals(id)).findFirst();
+        if (studyModel.isPresent()) {
+            return studyModel.get();
+        }
+        return null;
+    }
 
     public Notebook createNotebook(Study study, Notebook notebook) {
         notebook.setId(notebookCnt++);
