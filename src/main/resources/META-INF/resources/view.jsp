@@ -1,12 +1,17 @@
-<%@ include file="/init.jsp" %>
+<%@ include file="./init.jsp" %>
 
 <h1><liferay-ui:message key="study-catalogue-portlet.caption"/></h1>
 
-<portlet:actionURL name="addStudy" var="addStudyURL"></portlet:actionURL>
+<portlet:actionURL name="addStudy" var="addStudyURL" />
 
 <liferay-portlet:renderURL varImpl="searchURL">
     <portlet:param name="mvcPath" value="/view_search.jsp" />
 </liferay-portlet:renderURL>
+
+<liferay-portlet:renderURL var="studyModels">
+    <portlet:param name="mvcPath" value="/StudyModel/list.jsp" />
+</liferay-portlet:renderURL>
+<aui:button onClick="<%= studyModels %>" value="Study Models" />
 
 <aui:form action="<%= searchURL %>" method="get" name="<portlet:namespace />searchfm">
     <liferay-portlet:renderURLParams varImpl="searchURL" />
