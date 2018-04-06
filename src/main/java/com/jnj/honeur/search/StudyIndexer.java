@@ -22,13 +22,13 @@ import java.util.Locale;
 public class StudyIndexer extends BaseIndexer<Study> {
 
     private static final String CLASS_NAME = Study.class.getName();
-    private static final long COMPANY_ID = 1;
-    private static final long GROUP_ID = 1;
+    private static final long COMPANY_ID = 20116;
+    private static final long GROUP_ID = 35205;
 
     @Reference
     protected IndexWriterHelper indexWriterHelper;
-    @Reference
-    private StudyServiceFacade studyServiceFacade;
+    //@Reference
+    private StudyServiceFacade studyServiceFacade = StudyServiceFacade.getInstance();
 
 
     public StudyIndexer() {

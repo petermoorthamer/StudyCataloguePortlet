@@ -16,11 +16,16 @@ import java.util.Optional;
 @Component
 public class StudyServiceFacade {
 
+    private static final StudyServiceFacade INSTANCE = new StudyServiceFacade();
+
     private List<Study> studies = new ArrayList<>();
     private long studyCnt = 0;
     private List<Notebook> notebooks = new ArrayList<>();
     private long notebookCnt = 0;
 
+    public static StudyServiceFacade getInstance() {
+        return INSTANCE;
+    }
 
     @Indexable(type = IndexableType.REINDEX)
     public Study createStudy(Study study) {

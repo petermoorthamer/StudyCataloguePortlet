@@ -7,7 +7,6 @@ import com.jnj.honeur.service.StudyServiceFacade;
 import com.liferay.portal.kernel.portlet.bridges.mvc.MVCPortlet;
 import com.liferay.portal.kernel.util.ParamUtil;
 import org.osgi.service.component.annotations.Component;
-import org.osgi.service.component.annotations.Reference;
 
 import javax.portlet.*;
 import java.io.IOException;
@@ -34,11 +33,13 @@ public class StudyCataloguePortlet extends MVCPortlet {
     private static final String STUDIES = "studies";
     private static final String STUDY_NOTEBOOKS = "studyNotebooks";
 
-	@Reference
-    private StudyServiceFacade studyServiceFacade;
+	//@Reference
+    private StudyServiceFacade studyServiceFacade = StudyServiceFacade.getInstance();
 
 	@Override
 	public void render(RenderRequest renderRequest, RenderResponse renderResponse) throws PortletException, IOException {
+
+
 
         renderRequest.setAttribute(STUDIES, studyServiceFacade.findStudies());
 		renderRequest.setAttribute(STUDY_NOTEBOOKS, studyServiceFacade.findStudyNotebooks(null));

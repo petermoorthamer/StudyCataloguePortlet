@@ -1,7 +1,7 @@
 Bundle-Name: study-catalogue-portlet
 Bundle-SymbolicName: com.jnj.honeur
 Bundle-Version: 1.0-SNAPSHOT
-Export-Package: com.jnj.honeur.constants, com.jnj.honeur.search
+Export-Package: com.jnj.honeur.constants,com.jnj.honeur.search,com.jnj.honeur.service
 -jsp: *.jsp,*.jspf
 -plugin.jsp: com.liferay.ant.bnd.jsp.JspAnalyzerPlugin
 -plugin.resourcebundle: com.liferay.ant.bnd.resource.bundle.ResourceBundleLoaderAnalyzerPlugin
