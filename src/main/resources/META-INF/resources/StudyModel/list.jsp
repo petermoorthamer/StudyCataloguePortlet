@@ -1,7 +1,7 @@
 <%@include file="../init.jsp" %>
 
 <portlet:renderURL var="addStudyModelURL">
-    <portlet:param name="mvcPath" value="/StudyModel/add.jsp"/>
+    <portlet:param name="mvcPath" value="/StudyModel/edit.jsp"/>
 </portlet:renderURL>
 <portlet:renderURL var="returnURL">
     <portlet:param name="mvcPath" value="/view.jsp"/>
@@ -21,6 +21,7 @@
         <liferay-ui:search-container-column-text property="name"/>
         <liferay-ui:search-container-column-text property="id"/>
         <liferay-ui:search-container-column-text property="companyId"/>
+        <liferay-ui:search-container-column-text property="uuid"/>
     </liferay-ui:search-container-row>
     <liferay-ui:search-iterator/>
 </liferay-ui:search-container>

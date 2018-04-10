@@ -7,7 +7,7 @@ import java.io.Serializable;
 
 public class StudyModel extends BaseModelImpl<Study> {
     public static final String TITLE = "name";
-    public static final String UID = "id";
+    public static final String UID = "uuid";
     public static final String COMPANY_ID = "companyId";
     public static final String GROUP_ID = "groupId";
 
@@ -17,6 +17,9 @@ public class StudyModel extends BaseModelImpl<Study> {
     private Study study;
     private Long companyId;
     private Long groupId;
+    private Long userId;
+    private String userName;
+    private String uuid;
 
     public StudyModel(Study study) {
         this.study = study;
@@ -34,6 +37,14 @@ public class StudyModel extends BaseModelImpl<Study> {
 
     public void setId(Long id) {
         study.setId(id);
+    }
+
+    public String getUuid() {
+        return uuid;
+    }
+
+    public void setUuid(String uuid) {
+        this.uuid = uuid;
     }
 
     public String getName() {
@@ -58,6 +69,22 @@ public class StudyModel extends BaseModelImpl<Study> {
 
     public void setGroupId(Long groupId) {
         this.groupId = groupId;
+    }
+
+    public Long getUserId() {
+        return userId;
+    }
+
+    public void setUserId(Long userId) {
+        this.userId = userId;
+    }
+
+    public String getUserName() {
+        return userName;
+    }
+
+    public void setUserName(String userName) {
+        this.userName = userName;
     }
 
     @Override

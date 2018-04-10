@@ -5,10 +5,14 @@ import com.jnj.honeur.model.Notebook;
 import com.jnj.honeur.model.Study;
 import com.jnj.honeur.model.StudyModel;
 import com.jnj.honeur.service.StudyServiceFacade;
+import com.liferay.portal.kernel.exception.PortalException;
+import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.portlet.bridges.mvc.MVCPortlet;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
+import com.liferay.portal.kernel.uuid.PortalUUIDUtil;
 import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
 
 import javax.portlet.*;
 import java.io.IOException;
@@ -59,15 +63,37 @@ public class StudyCataloguePortlet extends MVCPortlet {
         studyServiceFacade.createStudy(study);
     }
 
-    public void addStudyModel(ActionRequest request, ActionResponse response) {
-        String studyName = ParamUtil.getString(request, "name");
-        Study study = new Study();
-        study.setName(studyName);
-        StudyModel studyModel = new StudyModel(study);
-        studyServiceFacade.createStudyModel(studyModel);
+    public void saveStudyModel(ActionRequest request, ActionResponse response) throws PortletException{
+        try {
+            Long studyId = ParamUtil.getLong(request, "id");
+            String studyName = ParamUtil.getString(request, "name");
 
-        // Do a redirect back to StudyModel list.
-        response.setRenderParameter("jspPage", "/StudyModel/list.jsp");
+            if (studyId == 0) {
+                StudyModel studyModel = new StudyModel(new Study());
+                studyModel.setName(studyName);
+                User user = PortalUtil.getUser(request);
+                studyModel.setUserId(user.getUserId());
+                studyModel.setUserName(user.getScreenName());
+                studyModel.setUuid(PortalUUIDUtil.generate());
+                studyServiceFacade.createStudyModel(studyModel);
+            }
+            else {
+                StudyModel studyModel = studyServiceFacade.findStudyModelById(studyId);
+                studyModel.setName(studyName);
+                studyServiceFacade.saveStudyModel(studyModel);
+            }
+
+            // Do a redirect back to StudyModel list.
+            response.setRenderParameter("mvcPath", StudyCataloguePortletKeys.StudyModelAssetURLList + ".jsp");
+        } catch (PortalException e) {
+            throw new PortletException(e);
+        }
+    }
+
+    public void deleteStudyModel(ActionRequest request, ActionResponse response) {
+        long studyId = ParamUtil.getLong(request, "studyId");
+        StudyModel studyModel = studyServiceFacade.findStudyModelById(studyId);
+        studyServiceFacade.deleteStudyModel(studyModel);
     }
 
 

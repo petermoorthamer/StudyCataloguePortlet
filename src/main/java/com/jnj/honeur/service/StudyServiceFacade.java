@@ -74,12 +74,14 @@ public class StudyServiceFacade {
 
     @Indexable(type = IndexableType.REINDEX)
     public StudyModel saveStudyModel(StudyModel studyModel) {
+        deleteStudyModel(studyModel);
+        studyModels.add(studyModel);
         return studyModel;
     }
 
     @Indexable(type = IndexableType.DELETE)
     public void deleteStudyModel(StudyModel studyModel) {
-
+        studyModels.removeIf(s -> s.getId().equals(studyModel.getId()));
     }
 
     public List<StudyModel> findStudyModels() {

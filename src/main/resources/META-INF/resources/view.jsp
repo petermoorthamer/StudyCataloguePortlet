@@ -9,7 +9,7 @@
 </liferay-portlet:renderURL>
 
 <liferay-portlet:renderURL var="studyModels">
-    <portlet:param name="mvcPath" value="/StudyModel/list.jsp" />
+    <portlet:param name="mvcPath" value="/StudyModel/view.jsp" />
 </liferay-portlet:renderURL>
 <aui:button onClick="<%= studyModels %>" value="Study Models" />
 
