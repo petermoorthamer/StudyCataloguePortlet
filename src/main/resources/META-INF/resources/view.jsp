@@ -35,7 +35,7 @@
     <liferay-ui:search-container-results results="<%= studies %>" />
 
     <liferay-ui:search-container-row
-            className="com.jnj.honeur.model.Study"
+            className="com.jnj.honeur.catalogue.model.Study"
             modelVar="study">
 
         <liferay-ui:search-container-column-text property="name"  />
@@ -51,7 +51,15 @@
     <aui:fieldset>
         <aui:input name="studyName"></aui:input>
     </aui:fieldset>
-
+    <aui:fieldset>
+        <aui:input name="studyNumber"></aui:input>
+    </aui:fieldset>
+    <aui:fieldset>
+        <aui:input name="studyDescription"></aui:input>
+    </aui:fieldset>
+    <aui:fieldset>
+        <aui:input name="studyAcknowledgments"></aui:input>
+    </aui:fieldset>
     <aui:button-row>
         <aui:button type="submit"></aui:button>
     </aui:button-row>

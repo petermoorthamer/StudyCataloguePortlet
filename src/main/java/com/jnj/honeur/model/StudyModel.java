@@ -1,6 +1,7 @@
 package com.jnj.honeur.model;
 
 
+import com.jnj.honeur.catalogue.model.Study;
 import com.liferay.portal.kernel.model.impl.BaseModelImpl;
 
 import java.io.Serializable;

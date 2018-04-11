@@ -1,15 +1,12 @@
 package com.jnj.honeur.service;
 
-import com.jnj.honeur.model.Notebook;
-import com.jnj.honeur.model.Study;
-import com.jnj.honeur.model.StudyModel;
+import com.jnj.honeur.catalogue.model.Study;
 import com.liferay.portal.kernel.search.Indexable;
 import com.liferay.portal.kernel.search.IndexableType;
 import org.osgi.service.component.annotations.Component;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
+import java.util.logging.Logger;
 
 /**
  * Temporary implementation for testing
@@ -17,19 +14,15 @@ import java.util.Optional;
 @Component
 public class StudyServiceFacade {
 
+    private static final Logger LOGGER = Logger.getLogger(StudyServiceFacade.class.getName());
     private static final StudyServiceFacade INSTANCE = new StudyServiceFacade();
-    private long companyId;
-
-    private List<Study> studies = new ArrayList<>();
-    private long studyCnt = 0;
-    private List<Notebook> notebooks = new ArrayList<>();
-    private long notebookCnt = 0;
-    private List<StudyModel> studyModels = new ArrayList<>();
-    private long studyModelCnt = 0;
 
     public static StudyServiceFacade getInstance() {
         return INSTANCE;
     }
+
+    private long companyId;
+    private StudyCatalogueRestClient restClient = new StudyCatalogueRestClient("https://localhost:8448/studies");
 
     public void setCompanyId(Long companyId) {
         this.companyId = companyId;
@@ -37,14 +30,12 @@ public class StudyServiceFacade {
 
     @Indexable(type = IndexableType.REINDEX)
     public Study createStudy(Study study) {
-        study.setId(++studyCnt);
-        studies.add(study);
-        return study;
+        return restClient.createStudy(study);
     }
 
     @Indexable(type = IndexableType.REINDEX)
     public Study saveStudy(Study study) {
-        return study;
+        return restClient.saveStudy(study);
     }
 
     @Indexable(type = IndexableType.DELETE)
@@ -53,116 +44,13 @@ public class StudyServiceFacade {
     }
 
     public List<Study> findStudies() {
+        List<Study> studies = restClient.findAllStudies();
+        LOGGER.info("findStudies response: " + studies);
         return studies;
     }
 
     public Study findStudyById(final Long id) {
-        Optional<Study> study = studies.stream().filter(s -> s.getId().equals(id)).findFirst();
-        if (study.isPresent()) {
-            return study.get();
-        }
-        return null;
+        return restClient.findStudyById(id);
     }
-
-    @Indexable(type = IndexableType.REINDEX)
-    public StudyModel createStudyModel(StudyModel studyModel) {
-        studyModel.setId(++studyModelCnt);
-        studyModel.setCompanyId(this.companyId);
-        studyModels.add(studyModel);
-        return studyModel;
-    }
-
-    @Indexable(type = IndexableType.REINDEX)
-    public StudyModel saveStudyModel(StudyModel studyModel) {
-        deleteStudyModel(studyModel);
-        studyModels.add(studyModel);
-        return studyModel;
-    }
-
-    @Indexable(type = IndexableType.DELETE)
-    public void deleteStudyModel(StudyModel studyModel) {
-        studyModels.removeIf(s -> s.getId().equals(studyModel.getId()));
-    }
-
-    public List<StudyModel> findStudyModels() {
-        return studyModels;
-    }
-
-    public StudyModel findStudyModelById(final Long id) {
-        Optional<StudyModel> studyModel = studyModels.stream().filter(s -> s.getId().equals(id)).findFirst();
-        if (studyModel.isPresent()) {
-            return studyModel.get();
-        }
-        return null;
-    }
-
-    public Notebook createNotebook(Study study, Notebook notebook) {
-        notebook.setId(notebookCnt++);
-        notebooks.add(notebook);
-        return notebook;
-    }
-
-    public List<Notebook> findStudyNotebooks(Study study) {
-        return notebooks;
-
-    }
-
-    /*public Notebook createNotebook(Notebook notebook) {
-        try {
-
-            String[] notebookEntries = prefs.getValues(STUDY_NOTEBOOKS, new String[1]);
-
-            ArrayList<String> entries = new ArrayList<String>();
-
-            if (notebookEntries[0] != null) {
-                entries = new ArrayList<String>(Arrays.asList(prefs.getValues(
-                        STUDY_NOTEBOOKS, new String[1])));
-            }
-
-            entries.add(notebook.getUrl());
-
-            String[] array = entries.toArray(new String[entries.size()]);
-
-            prefs.setValues(STUDY_NOTEBOOKS, array);
-
-            try {
-                prefs.store();
-            }
-            catch (IOException | ValidatorException ex) {
-                Logger.getLogger(StudyCataloguePortlet.class.getName()).log(
-                        Level.SEVERE, null, ex);
-            }
-
-        }
-        catch (ReadOnlyException ex) {
-            Logger.getLogger(StudyCataloguePortlet.class.getName()).log(
-                    Level.SEVERE, null, ex);
-        }
-
-        return notebook;
-    }
-
-    public List<Notebook> findStudyNotebooks(Study study) {
-        String[] studyNotebooks = prefs.getValues(STUDY_NOTEBOOKS, new String[1]);
-
-        if (studyNotebooks[0] != null) {
-            return parseNotebooks(studyNotebooks);
-        }
-
-        return Collections.emptyList();
-    }
-
-    private List<Notebook> parseNotebooks(String[] studyNotebooks) {
-        final List<Notebook> notebooks = new ArrayList<Notebook>();
-
-        for (String notebookUrl : studyNotebooks) {
-            Notebook notebook = new Notebook();
-            notebook.setUrl(notebookUrl);
-            notebooks.add(notebook);
-        }
-
-        return notebooks;
-    }*/
-
 
 }

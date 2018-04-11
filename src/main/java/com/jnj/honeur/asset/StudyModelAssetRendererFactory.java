@@ -2,9 +2,8 @@ package com.jnj.honeur.asset;
 
 
 import com.jnj.honeur.constants.StudyCataloguePortletKeys;
-import com.jnj.honeur.model.Study;
 import com.jnj.honeur.model.StudyModel;
-import com.jnj.honeur.service.StudyServiceFacade;
+import com.jnj.honeur.service.StudyModelServiceFacade;
 import com.liferay.asset.kernel.model.AssetRenderer;
 import com.liferay.asset.kernel.model.AssetRendererFactory;
 import com.liferay.asset.kernel.model.BaseAssetRendererFactory;
@@ -25,10 +24,10 @@ import javax.servlet.ServletContext;
         service = AssetRendererFactory.class
 )
 public class StudyModelAssetRendererFactory extends BaseAssetRendererFactory<StudyModel> {
-    public static final String CLASS_NAME = Study.class.getName();
+    public static final String CLASS_NAME = StudyModel.class.getName();
     public static final String TYPE = "studymodel"; // @TODO: figure out what this means.
     private static final boolean LINKABLE = true;
-    private StudyServiceFacade studyServiceFacade;
+    private StudyModelServiceFacade studyModelServiceFacade;
     private ServletContext servletContext;
 
     public StudyModelAssetRendererFactory() {
@@ -46,13 +45,13 @@ public class StudyModelAssetRendererFactory extends BaseAssetRendererFactory<Stu
     }
 
     @Reference(unbind = "-")
-    protected void setStudyServiceFacade(StudyServiceFacade studyServiceFacade) {
-        this.studyServiceFacade = studyServiceFacade;
+    protected void setStudyModelServiceFacade(StudyModelServiceFacade studyServiceFacade) {
+        this.studyModelServiceFacade = studyServiceFacade;
     }
 
     @Override
     public AssetRenderer<StudyModel> getAssetRenderer(long classPK, int type) {
-        StudyModel studyModel = studyServiceFacade.findStudyModelById(classPK);
+        StudyModel studyModel = studyModelServiceFacade.findStudyModelById(classPK);
         StudyModelAssetRenderer studyModelAssetRenderer = new StudyModelAssetRenderer(studyModel);
         studyModelAssetRenderer.setAssetRendererType(type);
         studyModelAssetRenderer.setServletContext(servletContext);

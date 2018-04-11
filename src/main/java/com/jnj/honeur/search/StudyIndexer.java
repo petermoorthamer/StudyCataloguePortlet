@@ -1,6 +1,6 @@
 package com.jnj.honeur.search;
 
-import com.jnj.honeur.model.Study;
+import com.jnj.honeur.catalogue.model.Study;
 import com.jnj.honeur.service.StudyServiceFacade;
 import com.liferay.portal.kernel.search.*;
 import com.liferay.portal.kernel.search.filter.BooleanFilter;
@@ -49,7 +49,9 @@ public class StudyIndexer extends BaseIndexer<Study> {
     protected Document doGetDocument(Study study) throws Exception {
         Document document = new DocumentImpl();
 
-        document.addDate(Field.MODIFIED_DATE, study.getModifiedDate());
+        if(study.getModifiedDate() != null) {
+            document.addDate(Field.MODIFIED_DATE, study.getModifiedDate().getTime());
+        }
 
         Locale defaultLocale =
                 PortalUtil.getSiteDefaultLocale(GROUP_ID);

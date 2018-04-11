@@ -1,7 +1,6 @@
 package com.jnj.honeur.asset;
 
 import com.jnj.honeur.constants.StudyCataloguePortletKeys;
-import com.jnj.honeur.model.Study;
 import com.jnj.honeur.model.StudyModel;
 import com.liferay.asset.kernel.model.BaseJSPAssetRenderer;
 import com.liferay.portal.kernel.exception.PortalException;
@@ -118,7 +117,7 @@ public class StudyModelAssetRenderer extends BaseJSPAssetRenderer<StudyModel> {
 
     @Override
     public String getClassName() {
-        return Study.class.getName();
+        return StudyModel.class.getName();
     }
 
     @Override

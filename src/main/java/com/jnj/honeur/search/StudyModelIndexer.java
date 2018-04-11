@@ -1,6 +1,6 @@
 package com.jnj.honeur.search;
 
-import com.jnj.honeur.model.Study;
+import com.jnj.honeur.catalogue.model.Study;
 import com.jnj.honeur.model.StudyModel;
 import com.jnj.honeur.service.StudyServiceFacade;
 import com.liferay.portal.kernel.search.*;
