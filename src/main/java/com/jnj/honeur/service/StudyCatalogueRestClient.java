@@ -11,12 +11,15 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.logging.Logger;
 
 /**
  * REST client for saving and retrieving studies of the HONEUR Study Catalogue via the REST API
  * @author Peter Moorthamer
  */
 public class StudyCatalogueRestClient {
+
+    private static final Logger LOGGER = Logger.getLogger(StudyCatalogueRestClient.class.getName());
 
     private String apiUrl;
 
@@ -33,10 +36,12 @@ public class StudyCatalogueRestClient {
     }
 
     public Study saveStudy(final Study study) {
+        LOGGER.info("StudyCatalogueRestClient.saveStudy: " + study);
+        LOGGER.info("StudyCatalogueRestClient.saveStudy: " + study.getNotebooks());
         RestTemplate restTemplate = new RestTemplate();
         HttpEntity<Study> request = new HttpEntity<>(study);
         ResponseEntity response = restTemplate.exchange(apiUrl, HttpMethod.PUT, request, ResponseEntity.class);
-        System.out.println("saveStudy response: " + response);
+        LOGGER.info("saveStudy response: " + response);
         return study;
     }
 

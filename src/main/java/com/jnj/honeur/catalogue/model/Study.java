@@ -1,9 +1,7 @@
 package com.jnj.honeur.catalogue.model;
 
 import java.io.Serializable;
-import java.util.Calendar;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Represents a study record in the HONEUR Study Catalogue
@@ -18,7 +16,7 @@ public class Study implements Serializable {
     private String description;
     private String acknowledgments;
     private Calendar modifiedDate;
-    private Set<Notebook> notebooks;
+    private Set<Notebook> notebooks = new HashSet<>();
 
     public Long getId() {
         return id;
@@ -67,6 +65,20 @@ public class Study implements Serializable {
     }
     public void setNotebooks(Set<Notebook> notebooks) {
         this.notebooks = notebooks;
+    }
+
+    public List<Notebook> getNotebookList() {
+        return new ArrayList<>(getNotebooks());
+    }
+
+    public boolean addNotebook(final Notebook notebook) {
+        Study study = new Study();
+        study.setId(getId());
+        notebook.setStudy(study);
+        return notebooks.add(notebook);
+    }
+    public boolean removeNotebook(Notebook notebook) {
+        return this.notebooks.remove(notebook);
     }
 
     @Override

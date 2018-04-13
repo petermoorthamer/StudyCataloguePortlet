@@ -1,5 +1,6 @@
 package com.jnj.honeur.service;
 
+import com.jnj.honeur.catalogue.comparator.StudyComparator;
 import com.jnj.honeur.catalogue.model.Study;
 import com.liferay.portal.kernel.search.Indexable;
 import com.liferay.portal.kernel.search.IndexableType;
@@ -29,12 +30,23 @@ public class StudyServiceFacade {
     }
 
     @Indexable(type = IndexableType.REINDEX)
+    public Study createOrSaveStudy(final Study study) {
+        if(study.getId() == null) {
+            return createStudy(study);
+        } else {
+            return saveStudy(study);
+        }
+    }
+
+    @Indexable(type = IndexableType.REINDEX)
     public Study createStudy(Study study) {
+        LOGGER.info("Create study : " + study);
         return restClient.createStudy(study);
     }
 
     @Indexable(type = IndexableType.REINDEX)
     public Study saveStudy(Study study) {
+        LOGGER.info("Save study : " + study);
         return restClient.saveStudy(study);
     }
 
@@ -45,6 +57,7 @@ public class StudyServiceFacade {
 
     public List<Study> findStudies() {
         List<Study> studies = restClient.findAllStudies();
+        studies.sort(new StudyComparator());
         LOGGER.info("findStudies response: " + studies);
         return studies;
     }
