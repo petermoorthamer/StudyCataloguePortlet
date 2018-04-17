@@ -81,6 +81,10 @@ public class Study implements Serializable {
         return this.notebooks.remove(notebook);
     }
 
+    public Optional<Notebook> findNotebook(final Long notebookId) {
+        return getNotebooks().stream().filter(n -> n.getId().equals(notebookId)).findFirst();
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

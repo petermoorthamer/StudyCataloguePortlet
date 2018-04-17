@@ -26,10 +26,20 @@ public class Notebook implements Serializable {
     }
 
     public String getExternalId() {
+        if(externalId == null) {
+            return parseExternalIdFromUrl();
+        }
         return externalId;
     }
     public void setExternalId(String externalId) {
         this.externalId = externalId;
+    }
+
+    private String parseExternalIdFromUrl() {
+        if(url == null || !url.contains("/")) {
+            return null;
+        }
+        return url.substring(url.lastIndexOf('/') + 1);
     }
 
     public String getName() {
