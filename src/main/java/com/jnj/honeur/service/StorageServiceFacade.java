@@ -2,6 +2,7 @@ package com.jnj.honeur.service;
 
 import com.jnj.honeur.catalogue.model.Notebook;
 import com.jnj.honeur.catalogue.model.SharedNotebook;
+import com.jnj.honeur.catalogue.model.SharedNotebookResult;
 import com.jnj.honeur.catalogue.model.Study;
 import com.jnj.honeur.storage.model.StorageFileInfo;
 import com.jnj.honeur.storage.model.StorageLogEntry;
@@ -26,10 +27,6 @@ public class StorageServiceFacade {
         return restClient.getStudyNotebooks(studyId);
     }
 
-    private List<StorageLogEntry> getNotebookStorageLog(String notebookUuid) {
-        return restClient.getNotebookStorageLog(notebookUuid);
-    }
-
     public String shareStudyNotebook(Study study, Notebook notebook) {
         return restClient.shareStudyNotebook(study, notebook);
     }
@@ -48,6 +45,21 @@ public class StorageServiceFacade {
             }
         }
         return sharedNotebooks;
+    }
+
+    public List<StorageLogEntry> getNotebookStorageLog(String notebookUuid) {
+        return restClient.getNotebookStorageLog(notebookUuid);
+    }
+
+    public List<SharedNotebookResult> getNotebookResults(final Long studyId, final String notebookUuid) {
+        final List<SharedNotebookResult> notebookResults = new ArrayList<>();
+        for(StorageFileInfo storageFileInfo:restClient.getNotebookResults(studyId, notebookUuid)) {
+            SharedNotebookResult notebookResult = new SharedNotebookResult();
+            notebookResult.setStorageFileInfo(storageFileInfo);
+            notebookResult.setDownloadUrl(getFileDownloadUrl(storageFileInfo.getUuid()));
+            notebookResults.add(notebookResult);
+        }
+        return notebookResults;
     }
 
     private String getFileDownloadUrl(final String uuid) {

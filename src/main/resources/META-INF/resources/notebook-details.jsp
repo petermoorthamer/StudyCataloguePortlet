@@ -44,7 +44,7 @@
         </portlet:renderURL>
 
         <liferay-ui:search-container-column-text property="uuid" href="<%= notebookResultsURL %>"  />
-        <liferay-ui:search-container-column-text property="dateTime" />
+        <liferay-ui:search-container-column-text property="lastModified" />
         <liferay-ui:search-container-column-text><a href="<%=sharedNotebook.getDownloadUrl()%>" target="_blank">Download</a></liferay-ui:search-container-column-text>
 
     </liferay-ui:search-container-row>

@@ -1,16 +1,12 @@
 package com.jnj.honeur.catalogue.model;
 
-import com.jnj.honeur.storage.model.StorageFileInfo;
-import com.jnj.honeur.storage.model.StorageLogEntry;
-
+import java.util.ArrayList;
 import java.util.List;
 
-public class SharedNotebook {
+public class SharedNotebook extends AbstractStorageFile {
 
     private Notebook notebook;
-    private StorageFileInfo storageFileInfo;
-    private List<StorageLogEntry> storageLogEntryList;
-    private String downloadUrl;
+    private List<SharedNotebookResult> notebookResults = new ArrayList<>();
 
     public Notebook getNotebook() {
         return notebook;
@@ -19,28 +15,14 @@ public class SharedNotebook {
         this.notebook = notebook;
     }
 
-    public String getUuid() {
-        return storageFileInfo.getUuid();
+    public List<SharedNotebookResult> getNotebookResults() {
+        return notebookResults;
+    }
+    public void setNotebookResults(List<SharedNotebookResult> notebookResults) {
+        this.notebookResults = notebookResults;
     }
 
-    public StorageFileInfo getStorageFileInfo() {
-        return storageFileInfo;
-    }
-    public void setStorageFileInfo(StorageFileInfo storageFileInfo) {
-        this.storageFileInfo = storageFileInfo;
-    }
-
-    public List<StorageLogEntry> getStorageLogEntryList() {
-        return storageLogEntryList;
-    }
-    public void setStorageLogEntryList(List<StorageLogEntry> storageLogEntryList) {
-        this.storageLogEntryList = storageLogEntryList;
-    }
-
-    public String getDownloadUrl() {
-        return downloadUrl;
-    }
-    public void setDownloadUrl(String downloadUrl) {
-        this.downloadUrl = downloadUrl;
+    public boolean addNotebookResult(SharedNotebookResult notebookResult) {
+        return notebookResults.add(notebookResult);
     }
 }

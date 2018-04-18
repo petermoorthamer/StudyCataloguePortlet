@@ -41,7 +41,7 @@ public class StorageServiceRestClient {
         }
     }
 
-    public List<StorageLogEntry> getNotebookStorageLog(String notebookUuid) {
+    public List<StorageLogEntry> getNotebookStorageLog(final String notebookUuid) {
         final RestTemplate restTemplate = new RestTemplate();
         final String serviceUrl = apiUrl + "/storage-logs/notebook/" + notebookUuid;
         ResponseEntity<StorageLogEntry[]> response = restTemplate.getForEntity(serviceUrl, StorageLogEntry[].class);
@@ -66,6 +66,18 @@ public class StorageServiceRestClient {
         URI location = restTemplate.postForLocation(serviceUrl, request);
 
         return parseUuid(location);
+    }
+
+    public List<StorageFileInfo> getNotebookResults(final Long studyId, final String notebookUuid) {
+        final RestTemplate restTemplate = new RestTemplate();
+        final String serviceUrl = apiUrl + "/notebook-results/" + studyId + "/" + notebookUuid;
+        ResponseEntity<StorageFileInfo[]> response = restTemplate.getForEntity(serviceUrl, StorageFileInfo[].class);
+        StorageFileInfo[] notebookResults = response.getBody();
+        if (notebookResults == null || notebookResults.length == 0) {
+            return Collections.emptyList();
+        } else {
+            return new ArrayList<>(Arrays.asList(notebookResults));
+        }
     }
 
     private String parseUuid(URI uri) {

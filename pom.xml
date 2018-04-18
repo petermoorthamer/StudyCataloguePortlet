@@ -154,6 +154,23 @@
 					<docrootDirName>src/main/resources</docrootDirName>
 				</configuration>
 			</plugin>
+			<plugin>
+				<groupId>com.liferay</groupId>
+				<artifactId>com.liferay.portal.tools.bundle.support</artifactId>
+				<version>3.2.2</version>
+				<executions>
+					<execution>
+						<id>default-deploy</id>
+						<goals>
+							<goal>deploy</goal>
+						</goals>
+						<phase>pre-integration-test</phase>
+					</execution>
+				</executions>
+				<configuration>
+					<liferayHome>${liferay.home}</liferayHome>
+				</configuration>
+			</plugin>
 		</plugins>
 	</build>
 
