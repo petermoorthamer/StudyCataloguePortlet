@@ -9,6 +9,7 @@ import com.jnj.honeur.storage.model.StorageLogEntry;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.logging.Logger;
 
 public class StorageServiceFacade {
@@ -27,8 +28,8 @@ public class StorageServiceFacade {
         return restClient.getStudyNotebooks(studyId);
     }
 
-    public String shareStudyNotebook(Study study, Notebook notebook) {
-        return restClient.shareStudyNotebook(study, notebook);
+    public String shareStudyNotebook(Long studyId, Notebook notebook) {
+        return restClient.shareStudyNotebook(studyId, notebook);
     }
 
     public List<SharedNotebook> getSharedStudyNotebooks(Study study, Notebook notebook) {
@@ -60,6 +61,17 @@ public class StorageServiceFacade {
             notebookResults.add(notebookResult);
         }
         return notebookResults;
+    }
+
+    public SharedNotebookResult getNotebookResult(final SharedNotebook sharedNotebook, final String notebookResultUuid) {
+        Optional<SharedNotebookResult> notebookResultOptional = sharedNotebook.findNotebookResult(notebookResultUuid);
+        if(!notebookResultOptional.isPresent()) {
+            return null;
+        }
+        SharedNotebookResult notebookResult = notebookResultOptional.get();
+        notebookResult.setSharedNotebook(sharedNotebook);
+        notebookResult.setStorageLogEntryList(restClient.getNotebookResultStorageLog(notebookResultUuid));
+        return notebookResult;
     }
 
     private String getFileDownloadUrl(final String uuid) {

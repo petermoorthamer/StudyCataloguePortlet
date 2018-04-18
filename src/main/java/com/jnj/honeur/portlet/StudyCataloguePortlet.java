@@ -2,6 +2,7 @@ package com.jnj.honeur.portlet;
 
 import com.jnj.honeur.catalogue.model.Notebook;
 import com.jnj.honeur.catalogue.model.SharedNotebook;
+import com.jnj.honeur.catalogue.model.SharedNotebookResult;
 import com.jnj.honeur.catalogue.model.Study;
 import com.jnj.honeur.constants.StudyCataloguePortletKeys;
 import com.jnj.honeur.service.StorageServiceFacade;
@@ -36,21 +37,19 @@ public class StudyCataloguePortlet extends MVCPortlet {
 
     private static final Logger LOGGER = Logger.getLogger(StudyCataloguePortlet.class.getName());
 
-    public static final String STUDY = "study";
     public static final String STUDIES = "studies";
-    public static final String STUDY_NOTEBOOK = "studyNotebook";
-    public static final String STUDY_NOTEBOOKS = "studyNotebooks";
-    public static final String SHARED_STUDY_NOTEBOOK = "sharedStudyNotebook";
-    public static final String SHARED_STUDY_NOTEBOOKS = "sharedStudyNotebooks";
+    public static final String STUDY = "study";
+    public static final String NOTEBOOK = "notebook";
+    public static final String SHARED_NOTEBOOK = "sharedNotebook";
+    public static final String SHARED_NOTEBOOK_RESULT = "sharedNotebookResult";
 
 	//@Reference
     private StudyServiceFacade studyServiceFacade = StudyServiceFacade.getInstance();
     private StorageServiceFacade storageServiceFacade = StorageServiceFacade.getInstance();
 
-
 	@Override
 	public void render(RenderRequest renderRequest, RenderResponse renderResponse) throws PortletException, IOException {
-        LOGGER.info("StudyCataloguePortlet.render");
+        LOGGER.warning("StudyCataloguePortlet.render");
 
         // studyServiceFacade.setCompanyId(PortalUtil.getCompanyId(renderRequest));
 
@@ -62,6 +61,7 @@ public class StudyCataloguePortlet extends MVCPortlet {
             if(study != null) {
                 final Notebook notebook = prepareNotebookView(study, renderRequest);
                 final SharedNotebook sharedNotebook = prepareSharedNotebookView(study, notebook, renderRequest);
+                prepareNotebookResultView(sharedNotebook, renderRequest);
             }
         }
 		super.render(renderRequest, renderResponse);
@@ -69,7 +69,7 @@ public class StudyCataloguePortlet extends MVCPortlet {
 
 	private Study prepareStudyView(final PortletRequest request) {
         Long studyId = ParamUtil.getLong(request, "studyId");
-        LOGGER.fine("StudyId: " + studyId);
+        System.out.println("StudyId: " + studyId);
         if(studyId > 0) {
             final Study study = studyServiceFacade.findStudyById(studyId);
             request.setAttribute(STUDY, study);
@@ -80,13 +80,14 @@ public class StudyCataloguePortlet extends MVCPortlet {
 
     private Notebook prepareNotebookView(final Study study, final PortletRequest request) {
         Long notebookId = ParamUtil.getLong(request, "notebookId");
-        LOGGER.fine("NotebookId: " + notebookId);
+        System.out.println("NotebookId: " + notebookId);
         if(notebookId > 0) {
-            Optional<Notebook> notebook = study.findNotebook(notebookId);
-            if(notebook.isPresent()) {
-                request.setAttribute(STUDY_NOTEBOOK, notebook.get());
-                request.setAttribute(SHARED_STUDY_NOTEBOOKS, storageServiceFacade.getSharedStudyNotebooks(study, notebook.get()));
-                return notebook.get();
+            Optional<Notebook> notebookOptional = study.findNotebook(notebookId);
+            if(notebookOptional.isPresent()) {
+                final Notebook notebook = notebookOptional.get();
+                notebook.setSharedNotebookList(storageServiceFacade.getSharedStudyNotebooks(study, notebook));
+                request.setAttribute(NOTEBOOK, notebook);
+                return notebook;
             } else {
                 LOGGER.warning("No notebook found with ID " + notebookId);
             }
@@ -100,15 +101,31 @@ public class StudyCataloguePortlet extends MVCPortlet {
         if(sharedNotebookUuid.isEmpty()) {
            return null;
         }
-        SharedNotebook sharedNotebook = new SharedNotebook();
-        sharedNotebook.setNotebook(notebook);
-        sharedNotebook.setStorageLogEntryList(storageServiceFacade.getNotebookStorageLog(sharedNotebookUuid));
+        Optional<SharedNotebook> sharedNotebookOptional = notebook.findSharedNotebook(sharedNotebookUuid);
+        if(!sharedNotebookOptional.isPresent()) {
+            LOGGER.warning("No shared notebook found with UUID " + sharedNotebookUuid);
+            return null;
+        }
+        final SharedNotebook sharedNotebook = sharedNotebookOptional.get();
         sharedNotebook.setNotebookResults(storageServiceFacade.getNotebookResults(study.getId(), sharedNotebookUuid));
 
-        request.setAttribute(SHARED_STUDY_NOTEBOOK, sharedNotebook);
+        request.setAttribute(SHARED_NOTEBOOK, sharedNotebook);
 
         return sharedNotebook;
 	}
+
+    private SharedNotebookResult prepareNotebookResultView(final SharedNotebook sharedNotebook, final PortletRequest request) {
+        String sharedNotebookResultUuid = ParamUtil.getString(request, "sharedNotebookResultUuid");
+        System.out.println("sharedNotebookResultUuid: " + sharedNotebookResultUuid);
+        if(sharedNotebookResultUuid.isEmpty()) {
+            return null;
+        }
+        SharedNotebookResult notebookResult = storageServiceFacade.getNotebookResult(sharedNotebook, sharedNotebookResultUuid);
+
+        request.setAttribute(SHARED_NOTEBOOK_RESULT, notebookResult);
+
+        return notebookResult;
+    }
 
     public void newStudy(ActionRequest request, ActionResponse response) {
         LOGGER.info("StudyCataloguePortlet.newStudy");
@@ -136,7 +153,7 @@ public class StudyCataloguePortlet extends MVCPortlet {
 	    notebook.setStudy(study);
 
         request.setAttribute(STUDY, study);
-	    request.setAttribute(STUDY_NOTEBOOK, notebook);
+	    request.setAttribute(NOTEBOOK, notebook);
         response.setRenderParameter("mvcPath", "/notebook-details.jsp");
     }
 
@@ -167,12 +184,9 @@ public class StudyCataloguePortlet extends MVCPortlet {
             LOGGER.severe("No notebook found with ID " + notebookId);
             return;
         }
-        String notebookUuid = storageServiceFacade.shareStudyNotebook(study, notebook.get());
+        String notebookUuid = storageServiceFacade.shareStudyNotebook(study.getId(), notebook.get());
         LOGGER.info("Notebook UUID: " + notebookUuid);
 
-        request.setAttribute(STUDY, study);
-        request.setAttribute(STUDY_NOTEBOOK, notebook.get());
-        request.setAttribute(SHARED_STUDY_NOTEBOOKS, storageServiceFacade.getSharedStudyNotebooks(study, notebook.get()));
         response.setRenderParameter("mvcPath", "/notebook-details.jsp");
 	}
 }

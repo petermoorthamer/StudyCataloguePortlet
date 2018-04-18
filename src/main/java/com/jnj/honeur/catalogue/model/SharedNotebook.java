@@ -2,6 +2,7 @@ package com.jnj.honeur.catalogue.model;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 public class SharedNotebook extends AbstractStorageFile {
 
@@ -24,5 +25,9 @@ public class SharedNotebook extends AbstractStorageFile {
 
     public boolean addNotebookResult(SharedNotebookResult notebookResult) {
         return notebookResults.add(notebookResult);
+    }
+
+    public Optional<SharedNotebookResult> findNotebookResult(final String notebookResultUuid) {
+        return getNotebookResults().stream().filter(r -> r.getUuid().equals(notebookResultUuid)).findFirst();
     }
 }

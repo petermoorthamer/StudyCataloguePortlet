@@ -1,8 +1,7 @@
 package com.jnj.honeur.catalogue.model;
 
 import java.io.Serializable;
-import java.util.Calendar;
-import java.util.Objects;
+import java.util.*;
 
 /**
  * Represents a notebook linked to a study record in the HONEUR Study Catalogue
@@ -17,6 +16,8 @@ public class Notebook implements Serializable {
     private String url;
     private Calendar modifiedDate;
     private Study study;
+
+    private List<SharedNotebook> sharedNotebookList = new ArrayList<>();
 
     public Long getId() {
         return id;
@@ -68,6 +69,21 @@ public class Notebook implements Serializable {
     }
     public void setStudy(Study study) {
         this.study = study;
+    }
+
+    public List<SharedNotebook> getSharedNotebookList() {
+        return sharedNotebookList;
+    }
+    public void setSharedNotebookList(List<SharedNotebook> sharedNotebookList) {
+        this.sharedNotebookList = sharedNotebookList;
+    }
+
+    public Optional<SharedNotebook> findSharedNotebook(final String notebookUuid) {
+        return getSharedNotebookList().stream().filter(n -> n.getUuid().equals(notebookUuid)).findFirst();
+    }
+
+    public boolean isShared() {
+        return !sharedNotebookList.isEmpty();
     }
 
     @Override

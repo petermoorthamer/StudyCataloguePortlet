@@ -16,7 +16,7 @@ public abstract class AbstractStorageFile {
         return storageFileInfo.getUuid();
     }
 
-    public Date getLastModified() {
+    public Date getCreationDate() {
         return getStorageFileInfo().getLastModified();
     }
 
