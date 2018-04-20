@@ -1,5 +1,7 @@
 package com.jnj.honeur.catalogue.model;
 
+import com.jnj.honeur.catalogue.comparator.SharedNotebookComparator;
+
 import java.io.Serializable;
 import java.util.*;
 
@@ -72,6 +74,7 @@ public class Notebook implements Serializable {
     }
 
     public List<SharedNotebook> getSharedNotebookList() {
+        initSharedNotebookVersions();
         return sharedNotebookList;
     }
     public void setSharedNotebookList(List<SharedNotebook> sharedNotebookList) {
@@ -84,6 +87,14 @@ public class Notebook implements Serializable {
 
     public boolean isShared() {
         return !sharedNotebookList.isEmpty();
+    }
+
+    private void initSharedNotebookVersions() {
+        sharedNotebookList.sort(new SharedNotebookComparator());
+        int version = 1;
+        for(SharedNotebook sn:sharedNotebookList) {
+            sn.setVersion(SharedNotebook.VERSION_PREFIX + version++);
+        }
     }
 
     @Override

@@ -21,14 +21,38 @@
             <portlet:param name="mvcPath" value="/notebook-result-details.jsp" />
         </portlet:renderURL>
 
-        <liferay-ui:search-container-column-text property="uuid" href="<%= notebookResultURL %>" />
-        <liferay-ui:search-container-column-text property="creationDate" />
-        <liferay-ui:search-container-column-text><a href="<%=notebookResult.getDownloadUrl()%>" target="_blank">Download</a></liferay-ui:search-container-column-text>
+        <portlet:actionURL name="deleteNotebookResult" var="deleteNotebookResultURL">
+            <portlet:param name="sharedNotebookResultUuid" value="<%= notebookResult.getUuid()%>"/>
+        </portlet:actionURL>
+
+        <liferay-ui:search-container-column-text title="UUID" property="uuid" href="<%= notebookResultURL %>" />
+        <liferay-ui:search-container-column-text title="Filename" property="filename" />
+        <liferay-ui:search-container-column-text title="Created By" property="createdBy" />
+        <liferay-ui:search-container-column-text title="Creation Date" property="creationDate" />
+        <liferay-ui:search-container-column-text>
+            <aui:button type="submit" value="Delete" onClick="<%= deleteNotebookResultURL.toString() %>" />
+        </liferay-ui:search-container-column-text>
+        <liferay-ui:search-container-column-text>
+            <a href="<%=notebookResult.getDownloadUrl()%>" target="_blank">Download</a>
+        </liferay-ui:search-container-column-text>
 
     </liferay-ui:search-container-row>
 
     <liferay-ui:search-iterator />
 </liferay-ui:search-container>
+
+<portlet:actionURL name="uploadNotebookResult" var="uploadNotebookResultURL" />
+
+<aui:form enctype="multipart/form-data" action="<%= uploadNotebookResultURL %>" name="<portlet:namespace />uploadNotebookResultFm">
+    <aui:fieldset>
+        <aui:input type="file" name="file" />
+        <aui:input type="hidden" name="sharedNotebookUuid"  value="<%= sharedNotebook.getUuid() %>" />
+    </aui:fieldset>
+
+    <aui:button-row>
+        <aui:button type="submit" value="Upload Result" />
+    </aui:button-row>
+</aui:form>
 
 <h2>Notebook storage logs</h2>
 

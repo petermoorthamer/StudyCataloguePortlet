@@ -1,5 +1,6 @@
 package com.jnj.honeur.portlet;
 
+import com.jnj.honeur.catalogue.comparator.UserComparator;
 import com.jnj.honeur.catalogue.model.Notebook;
 import com.jnj.honeur.catalogue.model.SharedNotebook;
 import com.jnj.honeur.catalogue.model.SharedNotebookResult;
@@ -7,14 +8,29 @@ import com.jnj.honeur.catalogue.model.Study;
 import com.jnj.honeur.constants.StudyCataloguePortletKeys;
 import com.jnj.honeur.service.StorageServiceFacade;
 import com.jnj.honeur.service.StudyServiceFacade;
+import com.liferay.portal.kernel.exception.PortalException;
+import com.liferay.portal.kernel.model.Organization;
+import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.portlet.bridges.mvc.MVCPortlet;
+import com.liferay.portal.kernel.service.OrganizationLocalService;
+import com.liferay.portal.kernel.service.UserLocalService;
+import com.liferay.portal.kernel.upload.UploadPortletRequest;
 import com.liferay.portal.kernel.util.ParamUtil;
+import com.liferay.portal.kernel.util.PortalUtil;
 import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
 
 import javax.portlet.*;
+import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
+import java.util.List;
 import java.util.Optional;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 /**
  * @author Peter Moorthamer
@@ -42,6 +58,13 @@ public class StudyCataloguePortlet extends MVCPortlet {
     public static final String NOTEBOOK = "notebook";
     public static final String SHARED_NOTEBOOK = "sharedNotebook";
     public static final String SHARED_NOTEBOOK_RESULT = "sharedNotebookResult";
+    public static final String ORGANIZATIONS = "organizations";
+    public static final String USERS = "users";
+
+    @Reference
+    private OrganizationLocalService organizationService;
+    @Reference
+    private UserLocalService userService;
 
 	//@Reference
     private StudyServiceFacade studyServiceFacade = StudyServiceFacade.getInstance();
@@ -49,13 +72,14 @@ public class StudyCataloguePortlet extends MVCPortlet {
 
 	@Override
 	public void render(RenderRequest renderRequest, RenderResponse renderResponse) throws PortletException, IOException {
-        LOGGER.warning("StudyCataloguePortlet.render");
+        System.out.println("StudyCataloguePortlet.render");
 
         // studyServiceFacade.setCompanyId(PortalUtil.getCompanyId(renderRequest));
+        final User loggedOnUser = getLoggedOnUser(renderRequest);
 
         Long studyId = ParamUtil.getLong(renderRequest, "studyId");
         if(studyId <= 0) {
-            renderRequest.setAttribute(STUDIES, studyServiceFacade.findStudies());
+            renderRequest.setAttribute(STUDIES, studyServiceFacade.findStudies(loggedOnUser));
         } else {
             final Study study = prepareStudyView(renderRequest);
             if(study != null) {
@@ -63,9 +87,37 @@ public class StudyCataloguePortlet extends MVCPortlet {
                 final SharedNotebook sharedNotebook = prepareSharedNotebookView(study, notebook, renderRequest);
                 prepareNotebookResultView(sharedNotebook, renderRequest);
             }
+
         }
+        renderRequest.setAttribute(ORGANIZATIONS, findOrganizations());
+        renderRequest.setAttribute(USERS, findUsers());
+
 		super.render(renderRequest, renderResponse);
 	}
+
+	private User getLoggedOnUser(final PortletRequest request) {
+        try {
+            User loggedOnUser = PortalUtil.getUser(request);
+            LOGGER.info("loggedOnUser: " + loggedOnUser);
+            return loggedOnUser;
+        } catch (PortalException e) {
+            LOGGER.warning(e.getMessage());
+        }
+        return null;
+    }
+
+	private List<Organization> findOrganizations() {
+        final List<Organization> organizations = organizationService.getOrganizations(0, 250);
+        return organizations.stream().filter(org -> !org.getName().startsWith("Liferay")).collect(Collectors.toList());
+    }
+
+    private List<User> findUsers() {
+        final List<User> users = userService.getUsers(0, 250);
+        return users.stream()
+                .filter(usr -> !usr.getFullName().startsWith("Test"))
+                .sorted(new UserComparator())
+                .collect(Collectors.toList());
+    }
 
 	private Study prepareStudyView(final PortletRequest request) {
         Long studyId = ParamUtil.getLong(request, "studyId");
@@ -140,7 +192,14 @@ public class StudyCataloguePortlet extends MVCPortlet {
 		study.setNumber(ParamUtil.getString(request, "studyNumber"));
 		study.setDescription(ParamUtil.getString(request, "studyDescription"));
 		study.setAcknowledgments(ParamUtil.getString(request, "studyAcknowledgments"));
+		study.setLeadUserId(ParamUtil.getLong(request, "studyLead"));
+
+		String[] collaboratorIds = ParamUtil.getStringValues(request, "collaborators");
+        study.setCollaboratorIds(collaboratorIds);
 		studyServiceFacade.createOrSaveStudy(study);
+
+        request.setAttribute(STUDY, study);
+        response.setRenderParameter("mvcPath", "/study-details.jsp");
 	}
 
     public void newNotebook(ActionRequest request, ActionResponse response) {
@@ -189,4 +248,37 @@ public class StudyCataloguePortlet extends MVCPortlet {
 
         response.setRenderParameter("mvcPath", "/notebook-details.jsp");
 	}
+
+    public void deleteSharedNotebook(ActionRequest request, ActionResponse response) {
+        String sharedNotebookUuid = ParamUtil.getString(request, "sharedNotebookUuid");
+	    System.out.println("deleteSharedNotebook: " + sharedNotebookUuid);
+	    storageServiceFacade.deleteFile(sharedNotebookUuid);
+
+        response.setRenderParameter("mvcPath", "/notebook-details.jsp");
+    }
+
+    public void uploadNotebookResult(ActionRequest request, ActionResponse response) {
+        String sharedNotebookUuid = ParamUtil.getString(request, "sharedNotebookUuid");
+        UploadPortletRequest uploadRequest = PortalUtil.getUploadPortletRequest(request);
+        File uploadedFile = uploadRequest.getFile("file");
+        long sizeInBytes = uploadRequest.getSize("file");
+        String originalFileName = uploadRequest.getFileName("file");
+
+        Path copied = Paths.get("/Users/peter/Desktop/" + originalFileName);
+        try {
+            Files.copy(uploadedFile.toPath(), copied, StandardCopyOption.REPLACE_EXISTING);
+        } catch (IOException e) {
+            LOGGER.severe(e.getMessage());
+        }
+
+        System.out.println("Uploaded file: " + uploadedFile.getAbsolutePath());
+        System.out.println("Uploaded file size: " + sizeInBytes);
+        System.out.println("Copied file: " + copied);
+    }
+
+    public void deleteNotebookResult(ActionRequest request, ActionResponse response) {
+        String sharedNotebookResultUuid = ParamUtil.getString(request, "sharedNotebookResultUuid");
+        System.out.println("deleteNotebookResult: " + sharedNotebookResultUuid);
+        storageServiceFacade.deleteFile(sharedNotebookResultUuid);
+    }
 }

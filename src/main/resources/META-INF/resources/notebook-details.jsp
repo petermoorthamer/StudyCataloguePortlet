@@ -41,8 +41,20 @@
             <portlet:param name="mvcPath" value="/shared-notebook-details.jsp" />
         </portlet:renderURL>
 
-        <liferay-ui:search-container-column-text property="uuid" href="<%= sharedNotebookURL %>"  />
-        <liferay-ui:search-container-column-text property="creationDate" />
+        <portlet:actionURL name="deleteSharedNotebook" var="deleteSharedNotebookURL">
+            <portlet:param name="studyId" value="<%= String.valueOf(study.getId())%>"/>
+            <portlet:param name="notebookId" value="<%= String.valueOf(notebook.getId())%>"/>
+            <portlet:param name="sharedNotebookUuid" value="<%= sharedNotebook.getUuid()%>"/>
+        </portlet:actionURL>
+
+        <liferay-ui:search-container-column-text title="UUID" property="uuid" href="<%= sharedNotebookURL %>"  />
+        <liferay-ui:search-container-column-text title="Filename" property="filename"  />
+        <liferay-ui:search-container-column-text title="Version" property="version"  />
+        <liferay-ui:search-container-column-text title="Created By" property="createdBy" />
+        <liferay-ui:search-container-column-text title="Creation Date" property="creationDate" />
+        <liferay-ui:search-container-column-text>
+            <aui:button type="submit" value="Delete" onClick="<%= deleteSharedNotebookURL.toString() %>" />
+        </liferay-ui:search-container-column-text>
         <liferay-ui:search-container-column-text><a href="<%=sharedNotebook.getDownloadUrl()%>" target="_blank">Download</a></liferay-ui:search-container-column-text>
 
     </liferay-ui:search-container-row>

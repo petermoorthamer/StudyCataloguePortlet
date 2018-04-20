@@ -10,11 +10,15 @@ import java.util.*;
 
 public class Study implements Serializable {
 
+    private static final String ID_SEPARATOR = ",";
+
     private Long id;
     private String name;
     private String number;
     private String description;
     private String acknowledgments;
+    private Long leadUserId;
+    private String collaboratingOrganizationIds;
     private Calendar modifiedDate;
     private Set<Notebook> notebooks = new HashSet<>();
 
@@ -51,6 +55,45 @@ public class Study implements Serializable {
     }
     public void setAcknowledgments(String acknowledgments) {
         this.acknowledgments = acknowledgments;
+    }
+
+    public Long getLeadUserId() {
+        return leadUserId;
+    }
+    public void setLeadUserId(Long leadUserId) {
+        this.leadUserId = leadUserId;
+    }
+
+    public boolean isLeadUserId(Long leadUserId) {
+        return this.leadUserId != null && this.leadUserId.equals(leadUserId);
+    }
+
+    public String getCollaboratingOrganizationIds() {
+        return collaboratingOrganizationIds;
+    }
+    public void setCollaboratingOrganizationIds(String collaboratingOrganizationIds) {
+        this.collaboratingOrganizationIds = collaboratingOrganizationIds;
+    }
+
+    public String[] getCollaboratorIds() {
+        if(collaboratingOrganizationIds == null || collaboratingOrganizationIds.isEmpty()) {
+            return null;
+        }
+        return this.collaboratingOrganizationIds.split(ID_SEPARATOR);
+    }
+    public void setCollaboratorIds(String[] collaboratorIds) {
+        if(collaboratorIds == null) {
+            this.collaboratingOrganizationIds = null;
+        } else {
+            this.collaboratingOrganizationIds = String.join(ID_SEPARATOR, collaboratorIds);
+        }
+    }
+
+    public boolean hasCollaborator(String collaboratorId) {
+        return collaboratingOrganizationIds != null && collaboratingOrganizationIds.contains(collaboratorId);
+    }
+    public boolean hasCollaborator(Long collaboratorId) {
+        return hasCollaborator(collaboratorId.toString());
     }
 
     public Calendar getModifiedDate() {

@@ -6,7 +6,10 @@ import java.util.Optional;
 
 public class SharedNotebook extends AbstractStorageFile {
 
+    public static final String VERSION_PREFIX = "V";
+
     private Notebook notebook;
+    private String version = "";
     private List<SharedNotebookResult> notebookResults = new ArrayList<>();
 
     public Notebook getNotebook() {
@@ -14,6 +17,13 @@ public class SharedNotebook extends AbstractStorageFile {
     }
     public void setNotebook(Notebook notebook) {
         this.notebook = notebook;
+    }
+
+    public String getVersion() {
+        return version;
+    }
+    public void setVersion(String version) {
+        this.version = version;
     }
 
     public List<SharedNotebookResult> getNotebookResults() {

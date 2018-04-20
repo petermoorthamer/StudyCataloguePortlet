@@ -68,6 +68,14 @@ public class StorageServiceRestClient {
         return getStorageLogs(serviceUrl);
     }
 
+    public void deleteFile(String uuid) {
+        System.out.println("StorageServiceRestClient: deleteFile: " + uuid);
+        final String serviceUrl = apiUrl + "/file/" + uuid;
+        System.out.println("serviceUrl: " + serviceUrl);
+        final RestTemplate restTemplate = new RestTemplate();
+        restTemplate.delete(serviceUrl);
+    }
+
     private List<StorageFileInfo> getStorageFileInfo(final String serviceUrl) {
         final RestTemplate restTemplate = new RestTemplate();
         ResponseEntity<StorageFileInfo[]> response = restTemplate.getForEntity(serviceUrl, StorageFileInfo[].class);

@@ -74,6 +74,10 @@ public class StorageServiceFacade {
         return notebookResult;
     }
 
+    public void deleteFile(String uuid) {
+        restClient.deleteFile(uuid);
+    }
+
     private String getFileDownloadUrl(final String uuid) {
         return STORAGE_SERVICE_BASE_URL + "/file/" + uuid;
     }

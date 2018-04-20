@@ -4,8 +4,6 @@
 <jsp:useBean id="notebook" class="com.jnj.honeur.catalogue.model.Notebook" scope="request"/>
 <jsp:useBean id="sharedNotebookResult" class="com.jnj.honeur.catalogue.model.SharedNotebookResult" scope="request"/>
 
-<%=sharedNotebookResult%>
-
 <h2>Notebook result storage logs</h2>
 
 <liferay-ui:search-container>
