@@ -7,24 +7,24 @@ import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.search.Indexable;
 import com.liferay.portal.kernel.search.IndexableType;
 import org.osgi.service.component.annotations.Component;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 /**
- * Temporary implementation for testing
+ * Facade for the StudyService REST API
+ * @author Peter Moorthamer
  */
-@Component
+@Component(
+        immediate = true,
+        service = StudyServiceFacade.class
+)
 public class StudyServiceFacade {
 
-    private static final Logger LOGGER = Logger.getLogger(StudyServiceFacade.class.getName());
-    private static final StudyServiceFacade INSTANCE = new StudyServiceFacade();
-
-    public static StudyServiceFacade getInstance() {
-        return INSTANCE;
-    }
+    private static final Logger LOGGER = LoggerFactory.getLogger(StudyServiceFacade.class.getName());
 
     private long companyId;
     private StudyCatalogueRestClient restClient = new StudyCatalogueRestClient("https://localhost:8448/studies");
@@ -60,6 +60,7 @@ public class StudyServiceFacade {
     }
 
     public List<Study> findStudies() {
+        LOGGER.info("findAllStudies");
         List<Study> studies = restClient.findAllStudies();
         studies.sort(new StudyComparator());
         LOGGER.info("findStudies response: " + studies);
@@ -67,6 +68,7 @@ public class StudyServiceFacade {
     }
 
     public List<Study> findStudies(final User user) {
+        LOGGER.info("findStudies for user " + user);
         if(user == null) {
             return Collections.emptyList();
         }
@@ -102,6 +104,7 @@ public class StudyServiceFacade {
     }
 
     public Study findStudyById(final Long id) {
+        LOGGER.info("findStudyById: " + id);
         return restClient.findStudyById(id);
     }
 

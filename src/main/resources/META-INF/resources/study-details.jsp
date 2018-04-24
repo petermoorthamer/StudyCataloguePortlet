@@ -75,3 +75,8 @@
 </liferay-ui:search-container>
 
 <aui:button type="submit" value="Add notebook" onClick="<%= newNotebookURL.toString() %>" />
+
+
+<h2>Documents</h2>
+
+<p><i>TODO</i></p>

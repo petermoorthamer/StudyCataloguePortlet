@@ -6,15 +6,26 @@ import com.jnj.honeur.catalogue.model.SharedNotebookResult;
 import com.jnj.honeur.catalogue.model.Study;
 import com.jnj.honeur.storage.model.StorageFileInfo;
 import com.jnj.honeur.storage.model.StorageLogEntry;
+import org.osgi.service.component.annotations.Component;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.logging.Logger;
 
+/**
+ * Facade for the StorageService REST API
+ * @author Peter Moorthamer
+ */
+@Component(
+        immediate = true,
+        service = StorageServiceFacade.class
+)
 public class StorageServiceFacade {
 
-    private static final Logger LOGGER = Logger.getLogger(StorageServiceFacade.class.getName());
+    private static final Logger LOGGER = LoggerFactory.getLogger(StorageServiceFacade.class);
+
     private static final String STORAGE_SERVICE_BASE_URL = "https://localhost:8445";
     private static final StorageServiceFacade INSTANCE = new StorageServiceFacade();
 

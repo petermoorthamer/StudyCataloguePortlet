@@ -5,7 +5,7 @@
 <portlet:actionURL name="newStudy" var="newStudyURL" />
 
 <liferay-portlet:renderURL varImpl="searchURL">
-    <portlet:param name="mvcPath" value="/view_search.jsp" />
+    <portlet:param name="mvcPath" value="/view.jsp" />
 </liferay-portlet:renderURL>
 
 <aui:form action="<%= searchURL %>" method="get" name="<portlet:namespace />searchfm">
@@ -26,7 +26,7 @@
 
 <h3>Studies</h3>
 
-<liferay-ui:search-container>
+<liferay-ui:search-container delta="50" emptyResultsMessage="No studies were found." total="<%= studies.size() %>">
     <liferay-ui:search-container-results results="<%= studies %>" />
 
     <liferay-ui:search-container-row

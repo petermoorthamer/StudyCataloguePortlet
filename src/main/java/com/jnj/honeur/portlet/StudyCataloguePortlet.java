@@ -1,10 +1,7 @@
 package com.jnj.honeur.portlet;
 
 import com.jnj.honeur.catalogue.comparator.UserComparator;
-import com.jnj.honeur.catalogue.model.Notebook;
-import com.jnj.honeur.catalogue.model.SharedNotebook;
-import com.jnj.honeur.catalogue.model.SharedNotebookResult;
-import com.jnj.honeur.catalogue.model.Study;
+import com.jnj.honeur.catalogue.model.*;
 import com.jnj.honeur.constants.StudyCataloguePortletKeys;
 import com.jnj.honeur.service.StorageServiceFacade;
 import com.jnj.honeur.service.StudyServiceFacade;
@@ -12,24 +9,30 @@ import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.model.Organization;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.portlet.bridges.mvc.MVCPortlet;
+import com.liferay.portal.kernel.search.*;
 import com.liferay.portal.kernel.service.OrganizationLocalService;
 import com.liferay.portal.kernel.service.UserLocalService;
 import com.liferay.portal.kernel.upload.UploadPortletRequest;
+import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.util.StringUtils;
 
 import javax.portlet.*;
+import javax.servlet.http.HttpServletRequest;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 /**
@@ -51,11 +54,12 @@ import java.util.stream.Collectors;
 )
 public class StudyCataloguePortlet extends MVCPortlet {
 
-    private static final Logger LOGGER = Logger.getLogger(StudyCataloguePortlet.class.getName());
+    private static final Logger LOGGER = LoggerFactory.getLogger(StudyCataloguePortlet.class);
 
     public static final String STUDIES = "studies";
     public static final String STUDY = "study";
     public static final String NOTEBOOK = "notebook";
+    public static final String NOTEBOOK_STATISTICS = "notebookStatistics";
     public static final String SHARED_NOTEBOOK = "sharedNotebook";
     public static final String SHARED_NOTEBOOK_RESULT = "sharedNotebookResult";
     public static final String ORGANIZATIONS = "organizations";
@@ -65,32 +69,51 @@ public class StudyCataloguePortlet extends MVCPortlet {
     private OrganizationLocalService organizationService;
     @Reference
     private UserLocalService userService;
+    private StudyServiceFacade studyServiceFacade; // = StudyServiceFacade.getInstance();
+    private StorageServiceFacade storageServiceFacade; // = StorageServiceFacade.getInstance();
 
-	//@Reference
-    private StudyServiceFacade studyServiceFacade = StudyServiceFacade.getInstance();
-    private StorageServiceFacade storageServiceFacade = StorageServiceFacade.getInstance();
+    @Reference(unbind = "-")
+    public void setStudyServiceFacade(StudyServiceFacade studyServiceFacade) {
+        this.studyServiceFacade = studyServiceFacade;
+    }
 
-	@Override
+    @Reference(unbind = "-")
+    public void setStorageServiceFacade(StorageServiceFacade storageServiceFacade) {
+        this.storageServiceFacade = storageServiceFacade;
+    }
+
+    @Override
 	public void render(RenderRequest renderRequest, RenderResponse renderResponse) throws PortletException, IOException {
-        System.out.println("StudyCataloguePortlet.render");
+        LOGGER.debug("StudyCataloguePortlet.render");
+
+        try {
+            LOGGER.debug("Group ID: " + PortalUtil.getScopeGroupId(renderRequest));
+        } catch (PortalException e) {
+            LOGGER.warn(e.getMessage(), e);
+        }
 
         // studyServiceFacade.setCompanyId(PortalUtil.getCompanyId(renderRequest));
-        final User loggedOnUser = getLoggedOnUser(renderRequest);
+
+        final List<Organization> organizations = findOrganizations();
+        final List<User> users = findUsers();
 
         Long studyId = ParamUtil.getLong(renderRequest, "studyId");
         if(studyId <= 0) {
-            renderRequest.setAttribute(STUDIES, studyServiceFacade.findStudies(loggedOnUser));
+            prepareStudyListView(renderRequest);
         } else {
             final Study study = prepareStudyView(renderRequest);
             if(study != null) {
                 final Notebook notebook = prepareNotebookView(study, renderRequest);
-                final SharedNotebook sharedNotebook = prepareSharedNotebookView(study, notebook, renderRequest);
-                prepareNotebookResultView(sharedNotebook, renderRequest);
+                if(notebook != null) {
+                    prepareSharedNotebookStatistics(notebook, organizations, users, renderRequest);
+                    final SharedNotebook sharedNotebook = prepareSharedNotebookView(study, notebook, renderRequest);
+                    prepareNotebookResultView(sharedNotebook, renderRequest);
+                }
             }
-
         }
-        renderRequest.setAttribute(ORGANIZATIONS, findOrganizations());
-        renderRequest.setAttribute(USERS, findUsers());
+
+        renderRequest.setAttribute(ORGANIZATIONS, organizations);
+        renderRequest.setAttribute(USERS, users);
 
 		super.render(renderRequest, renderResponse);
 	}
@@ -98,20 +121,22 @@ public class StudyCataloguePortlet extends MVCPortlet {
 	private User getLoggedOnUser(final PortletRequest request) {
         try {
             User loggedOnUser = PortalUtil.getUser(request);
-            LOGGER.info("loggedOnUser: " + loggedOnUser);
+            LOGGER.debug("loggedOnUser: " + loggedOnUser);
             return loggedOnUser;
         } catch (PortalException e) {
-            LOGGER.warning(e.getMessage());
+            LOGGER.error(e.getMessage(), e);
         }
         return null;
     }
 
 	private List<Organization> findOrganizations() {
+        LOGGER.debug("findOrganizations");
         final List<Organization> organizations = organizationService.getOrganizations(0, 250);
         return organizations.stream().filter(org -> !org.getName().startsWith("Liferay")).collect(Collectors.toList());
     }
 
     private List<User> findUsers() {
+        LOGGER.debug("findUsers");
         final List<User> users = userService.getUsers(0, 250);
         return users.stream()
                 .filter(usr -> !usr.getFullName().startsWith("Test"))
@@ -119,9 +144,28 @@ public class StudyCataloguePortlet extends MVCPortlet {
                 .collect(Collectors.toList());
     }
 
+    private List<Study> prepareStudyListView(final PortletRequest request) {
+        final User loggedOnUser = getLoggedOnUser(request);
+        final String keywords = ParamUtil.getString(request, "keywords");
+
+        List<Study> studies = null;
+        if(!StringUtils.isEmpty(keywords)) {
+            LOGGER.info("prepareStudyListView with search keywords: " + keywords);
+            studies = searchStudies(request, keywords, loggedOnUser);
+        } else {
+            LOGGER.info("find all studies for the logged in user");
+            studies = studyServiceFacade.findStudies(loggedOnUser);
+        }
+        request.setAttribute(STUDIES, studies);
+        request.setAttribute("keywords", keywords);
+
+
+        return studies;
+    }
+
 	private Study prepareStudyView(final PortletRequest request) {
         Long studyId = ParamUtil.getLong(request, "studyId");
-        System.out.println("StudyId: " + studyId);
+        LOGGER.debug("StudyId: " + studyId);
         if(studyId > 0) {
             final Study study = studyServiceFacade.findStudyById(studyId);
             request.setAttribute(STUDY, study);
@@ -132,7 +176,7 @@ public class StudyCataloguePortlet extends MVCPortlet {
 
     private Notebook prepareNotebookView(final Study study, final PortletRequest request) {
         Long notebookId = ParamUtil.getLong(request, "notebookId");
-        System.out.println("NotebookId: " + notebookId);
+        LOGGER.debug("NotebookId: " + notebookId);
         if(notebookId > 0) {
             Optional<Notebook> notebookOptional = study.findNotebook(notebookId);
             if(notebookOptional.isPresent()) {
@@ -141,21 +185,28 @@ public class StudyCataloguePortlet extends MVCPortlet {
                 request.setAttribute(NOTEBOOK, notebook);
                 return notebook;
             } else {
-                LOGGER.warning("No notebook found with ID " + notebookId);
+                LOGGER.warn("No notebook found with ID " + notebookId);
             }
         }
         return null;
     }
 
+    private List<SharedNotebookStatistics> prepareSharedNotebookStatistics(final Notebook notebook, final List<Organization> organizations, final List<User> users, final PortletRequest request) {
+	    SharedNotebookStatisticsCalculator calculator = new SharedNotebookStatisticsCalculator(notebook, organizations, users);
+        List<SharedNotebookStatistics> statistics = calculator.calculate();
+        request.setAttribute(NOTEBOOK_STATISTICS, statistics);
+        return statistics;
+    }
+
     private SharedNotebook prepareSharedNotebookView(final Study study, final Notebook notebook, final PortletRequest request) {
         String sharedNotebookUuid = ParamUtil.getString(request, "sharedNotebookUuid");
-        System.out.println("sharedNotebookUuid: " + sharedNotebookUuid);
+        LOGGER.debug("sharedNotebookUuid: " + sharedNotebookUuid);
         if(sharedNotebookUuid.isEmpty()) {
            return null;
         }
         Optional<SharedNotebook> sharedNotebookOptional = notebook.findSharedNotebook(sharedNotebookUuid);
         if(!sharedNotebookOptional.isPresent()) {
-            LOGGER.warning("No shared notebook found with UUID " + sharedNotebookUuid);
+            LOGGER.warn("No shared notebook found with UUID " + sharedNotebookUuid);
             return null;
         }
         final SharedNotebook sharedNotebook = sharedNotebookOptional.get();
@@ -168,7 +219,7 @@ public class StudyCataloguePortlet extends MVCPortlet {
 
     private SharedNotebookResult prepareNotebookResultView(final SharedNotebook sharedNotebook, final PortletRequest request) {
         String sharedNotebookResultUuid = ParamUtil.getString(request, "sharedNotebookResultUuid");
-        System.out.println("sharedNotebookResultUuid: " + sharedNotebookResultUuid);
+        LOGGER.debug("sharedNotebookResultUuid: " + sharedNotebookResultUuid);
         if(sharedNotebookResultUuid.isEmpty()) {
             return null;
         }
@@ -201,6 +252,65 @@ public class StudyCataloguePortlet extends MVCPortlet {
         request.setAttribute(STUDY, study);
         response.setRenderParameter("mvcPath", "/study-details.jsp");
 	}
+
+	public List<Study> searchStudies(final PortletRequest request, String keywords, User loggedOnUser) {
+        LOGGER.info("*** searchStudies START ***");
+        LOGGER.info("searchStudies with keywords: " + keywords);
+
+        final List<Study> studies = new ArrayList<>();
+
+        try {
+            final Indexer indexer = IndexerRegistryUtil.getIndexer(Study.class);
+            LOGGER.debug("Indexer: " + indexer);
+            LOGGER.debug("Indexer enabled: " + indexer.isIndexerEnabled());
+            LOGGER.debug("Indexer search class names: ");
+            for(String className:indexer.getSearchClassNames()) {
+                LOGGER.debug("Indexer search class name: " + className);
+            }
+
+            final SearchContext searchContext = getSearchContext(request, keywords);
+            LOGGER.info("Indexer search count: " + indexer.searchCount(searchContext));
+
+            Hits hits = indexer.search(getSearchContext(request, keywords), Field.ENTRY_CLASS_PK);
+            LOGGER.info("# Hits: " + hits.getLength());
+            LOGGER.info("Query class: " + hits.getQuery().getClass());
+
+
+            for (int i = 0; i < hits.getDocs().length; i++) {
+                Document doc = hits.doc(i);
+                LOGGER.info("Document: " + doc);
+
+                long studyId = GetterUtil.getLong(doc.get(Field.ENTRY_CLASS_PK));
+                Study study = studyServiceFacade.findStudyById(studyId);
+                if(studyServiceFacade.isStudyAccessibleForUser(study, loggedOnUser)) {
+                    studies.add(study);
+                }
+            }
+
+            request.setAttribute(STUDIES, studies);
+
+        } catch (SearchException e) {
+            LOGGER.error(e.getMessage(), e);
+        }
+
+        LOGGER.info("*** searchStudies END ***");
+
+        return studies;
+    }
+
+    private SearchContext getSearchContext(final PortletRequest request, String keywords) {
+        final HttpServletRequest httpServletRequest = PortalUtil.getHttpServletRequest(request);
+        final SearchContext searchContext = SearchContextFactory.getInstance(httpServletRequest);
+
+        searchContext.setLike(true);
+        searchContext.setAndSearch(false);
+        searchContext.setKeywords(keywords);
+        searchContext.setAttribute("paginationType", "more");
+        searchContext.setStart(0);
+        searchContext.setEnd(50);
+
+        return searchContext;
+    }
 
     public void newNotebook(ActionRequest request, ActionResponse response) {
         LOGGER.info("StudyCataloguePortlet.newNotebook");
@@ -240,7 +350,7 @@ public class StudyCataloguePortlet extends MVCPortlet {
         Long notebookId = ParamUtil.getLong(request, "notebookId");
         Optional<Notebook> notebook = study.findNotebook(notebookId);
         if(!notebook.isPresent()) {
-            LOGGER.severe("No notebook found with ID " + notebookId);
+            LOGGER.error("No notebook found with ID " + notebookId);
             return;
         }
         String notebookUuid = storageServiceFacade.shareStudyNotebook(study.getId(), notebook.get());
@@ -251,7 +361,7 @@ public class StudyCataloguePortlet extends MVCPortlet {
 
     public void deleteSharedNotebook(ActionRequest request, ActionResponse response) {
         String sharedNotebookUuid = ParamUtil.getString(request, "sharedNotebookUuid");
-	    System.out.println("deleteSharedNotebook: " + sharedNotebookUuid);
+	    LOGGER.debug("deleteSharedNotebook: " + sharedNotebookUuid);
 	    storageServiceFacade.deleteFile(sharedNotebookUuid);
 
         response.setRenderParameter("mvcPath", "/notebook-details.jsp");
@@ -268,17 +378,17 @@ public class StudyCataloguePortlet extends MVCPortlet {
         try {
             Files.copy(uploadedFile.toPath(), copied, StandardCopyOption.REPLACE_EXISTING);
         } catch (IOException e) {
-            LOGGER.severe(e.getMessage());
+            LOGGER.error(e.getMessage(), e);
         }
 
-        System.out.println("Uploaded file: " + uploadedFile.getAbsolutePath());
-        System.out.println("Uploaded file size: " + sizeInBytes);
-        System.out.println("Copied file: " + copied);
+        LOGGER.debug("Uploaded file: " + uploadedFile.getAbsolutePath());
+        LOGGER.debug("Uploaded file size: " + sizeInBytes);
+        LOGGER.debug("Copied file: " + copied);
     }
 
     public void deleteNotebookResult(ActionRequest request, ActionResponse response) {
         String sharedNotebookResultUuid = ParamUtil.getString(request, "sharedNotebookResultUuid");
-        System.out.println("deleteNotebookResult: " + sharedNotebookResultUuid);
+        LOGGER.debug("deleteNotebookResult: " + sharedNotebookResultUuid);
         storageServiceFacade.deleteFile(sharedNotebookResultUuid);
     }
 }

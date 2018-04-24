@@ -3,6 +3,8 @@ package com.jnj.honeur.service;
 import com.jnj.honeur.catalogue.model.Notebook;
 import com.jnj.honeur.storage.model.StorageFileInfo;
 import com.jnj.honeur.storage.model.StorageLogEntry;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -16,7 +18,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.logging.Logger;
 
 /**
  * Rest client for the HONEUR Storage Service (HSS)
@@ -25,7 +26,7 @@ import java.util.logging.Logger;
 
 public class StorageServiceRestClient {
 
-    private static final Logger LOGGER = Logger.getLogger(StorageServiceRestClient.class.getName());
+    private static final Logger LOGGER = LoggerFactory.getLogger(StorageServiceRestClient.class);
 
     private String apiUrl;
 
@@ -69,9 +70,9 @@ public class StorageServiceRestClient {
     }
 
     public void deleteFile(String uuid) {
-        System.out.println("StorageServiceRestClient: deleteFile: " + uuid);
+        LOGGER.info("StorageServiceRestClient: deleteFile: " + uuid);
         final String serviceUrl = apiUrl + "/file/" + uuid;
-        System.out.println("serviceUrl: " + serviceUrl);
+        LOGGER.info("serviceUrl: " + serviceUrl);
         final RestTemplate restTemplate = new RestTemplate();
         restTemplate.delete(serviceUrl);
     }

@@ -1,6 +1,8 @@
 package com.jnj.honeur.service;
 
 import com.jnj.honeur.catalogue.model.Study;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
@@ -11,7 +13,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.logging.Logger;
 
 /**
  * REST client for saving and retrieving studies of the HONEUR Study Catalogue via the REST API
@@ -19,7 +20,7 @@ import java.util.logging.Logger;
  */
 public class StudyCatalogueRestClient {
 
-    private static final Logger LOGGER = Logger.getLogger(StudyCatalogueRestClient.class.getName());
+    private static final Logger LOGGER = LoggerFactory.getLogger(StudyCatalogueRestClient.class);
 
     private String apiUrl;
 
