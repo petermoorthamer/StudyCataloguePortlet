@@ -39,7 +39,6 @@
         </portlet:renderURL>
 
         <liferay-ui:search-container-column-text property="id" href="<%= studyDetailsURL %>"  />
-
         <liferay-ui:search-container-column-text property="number"  />
         <liferay-ui:search-container-column-text property="name"  />
         <liferay-ui:search-container-column-text property="description"  />

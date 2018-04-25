@@ -3,6 +3,10 @@ package com.jnj.honeur.storage.model;
 import java.time.ZonedDateTime;
 import java.util.Objects;
 
+/**
+ * Represents a storage log entry
+ * @author Peter Moorthamer
+ */
 public class StorageLogEntry {
 
     public enum Action {

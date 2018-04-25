@@ -26,14 +26,9 @@ public class StorageServiceFacade {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(StorageServiceFacade.class);
 
-    private static final String STORAGE_SERVICE_BASE_URL = "https://localhost:8445";
-    private static final StorageServiceFacade INSTANCE = new StorageServiceFacade();
+    private static final String STORAGE_SERVER_BASE_URL = System.getenv("STORAGE_SERVER_BASE_URL"); // https://localhost:8445
 
-    public static StorageServiceFacade getInstance() {
-        return INSTANCE;
-    }
-
-    private StorageServiceRestClient restClient = new StorageServiceRestClient(STORAGE_SERVICE_BASE_URL);
+    private StorageServiceRestClient restClient = new StorageServiceRestClient(STORAGE_SERVER_BASE_URL);
 
     private List<StorageFileInfo> getStudyNotebooks(final Long studyId) {
         return restClient.getStudyNotebooks(studyId);
@@ -86,11 +81,12 @@ public class StorageServiceFacade {
     }
 
     public void deleteFile(String uuid) {
+        LOGGER.info("Delete file with UUID " + uuid);
         restClient.deleteFile(uuid);
     }
 
     private String getFileDownloadUrl(final String uuid) {
-        return STORAGE_SERVICE_BASE_URL + "/file/" + uuid;
+        return STORAGE_SERVER_BASE_URL + "/file/" + uuid;
     }
 
 

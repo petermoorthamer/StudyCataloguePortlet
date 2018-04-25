@@ -8,6 +8,9 @@ import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * @author Peter Moorthamer
+ */
 public abstract class AbstractStorageFile {
 
     protected StorageFileInfo storageFileInfo;

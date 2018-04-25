@@ -14,6 +14,9 @@ import java.util.List;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.when;
 
+/**
+ * @author Peter Moorthamer
+ */
 public class SharedNotebookStatisticsCalculatorTest {
 
     private User user1;User user2;User user3;User user4;

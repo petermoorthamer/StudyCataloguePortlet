@@ -8,6 +8,9 @@ import java.util.Arrays;
 
 import static org.junit.Assert.assertEquals;
 
+/**
+ * @author Peter Moorthamer
+ */
 public class SharedNotebookStatisticsTest {
 
     private SharedNotebookStatistics statistics;

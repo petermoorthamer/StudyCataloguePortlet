@@ -4,6 +4,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * Represents a notebook file that has been shared with one or more organizations
+ * @author Peter Moorthamer
+ */
 public class SharedNotebook extends AbstractStorageFile {
 
     public static final String VERSION_PREFIX = "V";

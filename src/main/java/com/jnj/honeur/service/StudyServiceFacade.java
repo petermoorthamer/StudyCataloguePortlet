@@ -2,10 +2,13 @@ package com.jnj.honeur.service;
 
 import com.jnj.honeur.catalogue.comparator.StudyComparator;
 import com.jnj.honeur.catalogue.model.Study;
+import com.liferay.asset.kernel.service.AssetEntryLocalService;
+import com.liferay.asset.kernel.service.AssetLinkLocalService;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.search.Indexable;
 import com.liferay.portal.kernel.search.IndexableType;
+import com.liferay.portal.kernel.service.ServiceContext;
 import org.osgi.service.component.annotations.Component;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,16 +29,16 @@ public class StudyServiceFacade {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(StudyServiceFacade.class.getName());
 
-    private long companyId;
-    private StudyCatalogueRestClient restClient = new StudyCatalogueRestClient("https://localhost:8448/studies");
+    private static final String CATALOGUE_SERVER_BASE_URL = System.getenv("CATALOGUE_SERVER_BASE_URL"); // https://localhost:8448
 
-    public void setCompanyId(Long companyId) {
-        this.companyId = companyId;
-    }
+    private StudyCatalogueRestClient restClient = new StudyCatalogueRestClient(CATALOGUE_SERVER_BASE_URL + "/studies");
+
+    private AssetEntryLocalService assetEntryLocalService;
+    private AssetLinkLocalService assetLinkLocalService;
 
     @Indexable(type = IndexableType.REINDEX)
     public Study createOrSaveStudy(final Study study) {
-        if(study.getId() == null) {
+        if(study.getId() == null || Long.valueOf(0).equals(study.getId())) {
             return createStudy(study);
         } else {
             return saveStudy(study);
@@ -106,6 +109,22 @@ public class StudyServiceFacade {
     public Study findStudyById(final Long id) {
         LOGGER.info("findStudyById: " + id);
         return restClient.findStudyById(id);
+    }
+
+    public void addStudyAsset(Study study, long userId, long groupId, ServiceContext serviceContext) throws PortalException {
+        /*AssetEntry assetEntry = assetEntryLocalService.updateEntry(userId,
+                groupId, study.getCreateDate(), study.getModifiedDate(),
+                Study.class.getName(), study.getId(), study.getUuid(), 0,
+                serviceContext.getAssetCategoryIds(),
+                serviceContext.getAssetTagNames(), true, true, null, null, null, null,
+                ContentTypes.TEXT_HTML, study.getName(), null, null, null,
+                null, 0, 0, null);
+
+
+            assetLinkLocalService.updateLinks(userId, assetEntry.getEntryId(),
+                    serviceContext.getAssetLinkEntryIds(),
+                    AssetLinkConstants.TYPE_RELATED);
+        */
     }
 
 }

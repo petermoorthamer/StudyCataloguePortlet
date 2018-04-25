@@ -1,5 +1,6 @@
 package com.jnj.honeur.portlet;
 
+import com.jnj.honeur.catalogue.comparator.StudyComparator;
 import com.jnj.honeur.catalogue.comparator.UserComparator;
 import com.jnj.honeur.catalogue.model.*;
 import com.jnj.honeur.constants.StudyCataloguePortletKeys;
@@ -249,9 +250,21 @@ public class StudyCataloguePortlet extends MVCPortlet {
         study.setCollaboratorIds(collaboratorIds);
 		studyServiceFacade.createOrSaveStudy(study);
 
+		reIndexStudyIndex(study.getId());
+
         request.setAttribute(STUDY, study);
         response.setRenderParameter("mvcPath", "/study-details.jsp");
 	}
+
+	private void reIndexStudyIndex(Long studyId) {
+        try {
+            LOGGER.info("Re-index study with id " + studyId);
+            final Indexer indexer = IndexerRegistryUtil.getIndexer(Study.class);
+            indexer.reindex(indexer.getClassName(), studyId);
+        } catch (SearchException e) {
+            LOGGER.warn("Study re-indexing failed!", e);
+        }
+    }
 
 	public List<Study> searchStudies(final PortletRequest request, String keywords, User loggedOnUser) {
         LOGGER.info("*** searchStudies START ***");
@@ -286,6 +299,8 @@ public class StudyCataloguePortlet extends MVCPortlet {
                     studies.add(study);
                 }
             }
+
+            studies.sort(new StudyComparator());
 
             request.setAttribute(STUDIES, studies);
 

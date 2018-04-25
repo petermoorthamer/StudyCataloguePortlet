@@ -11,6 +11,10 @@ import java.util.Optional;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
+/**
+ * Calculates the sharing (downloads & uploads) statistics of a shared notebook file
+ * @author Peter Moorthamer
+ */
 public class SharedNotebookStatisticsCalculator {
 
     private static Logger LOGGER = Logger.getLogger(SharedNotebookStatisticsCalculator.class.getName());
