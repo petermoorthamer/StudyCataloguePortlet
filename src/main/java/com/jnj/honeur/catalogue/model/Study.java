@@ -89,6 +89,22 @@ public class Study implements Serializable {
         }
     }
 
+    public boolean addCollaboratingOrganizationId(long organizationId) {
+        if(hasCollaborator(organizationId)) {
+            return false;
+        }
+        collaboratingOrganizationIds += ID_SEPARATOR + organizationId;
+        return true;
+    }
+
+    public boolean removeCollaboratingOrganizationId(long organizationId) {
+        if(!hasCollaborator(organizationId)) {
+            return false;
+        }
+        collaboratingOrganizationIds = collaboratingOrganizationIds.replace(ID_SEPARATOR + organizationId, "");
+        return true;
+    }
+
     public boolean hasCollaborator(String collaboratorId) {
         return collaboratingOrganizationIds != null && collaboratingOrganizationIds.contains(collaboratorId);
     }
@@ -118,6 +134,9 @@ public class Study implements Serializable {
         Study study = new Study();
         study.setId(getId());
         notebook.setStudy(study);
+        if(notebooks.contains(notebook)) {
+            notebooks.remove(notebook);
+        }
         return notebooks.add(notebook);
     }
     public boolean removeNotebook(Notebook notebook) {

@@ -1,4 +1,3 @@
-<%@ page import="com.liferay.portal.kernel.model.Organization" %>
 <%@ include file="/init.jsp" %>
 
 <h1>Study details</h1>
@@ -6,7 +5,6 @@
 <jsp:useBean id="study" class="com.jnj.honeur.catalogue.model.Study" scope="request"/>
 <jsp:useBean id="organizations" class="java.util.ArrayList" scope="request"/>
 <jsp:useBean id="users" class="java.util.ArrayList" scope="request"/>
-
 
 <portlet:renderURL var="viewURL">
     <portlet:param name="mvcPath" value="/view.jsp"></portlet:param>
@@ -31,14 +29,6 @@
                 <aui:option value="${usr.primaryKey}">${usr.fullName}</aui:option>
             </c:forEach>
         </aui:select>
-        <aui:select label="Collaborators" helpMessage="Select one or more collaborating organizations" name="collaborators" multiple="true">
-            <% for(int i=0;i<organizations.size();i++) {
-                Organization org = (Organization)organizations.get(i);
-                boolean selected = study.hasCollaborator(org.getPrimaryKey());
-            %>
-                <aui:option value="<%=org.getPrimaryKey()%>" selected="<%=selected%>"><%=org.getName()%></aui:option>
-            <% } %>
-        </aui:select>
         <aui:input name="studyId" type="hidden" value="<%= study.getId() %>" />
     </aui:fieldset>
 
@@ -47,6 +37,54 @@
         <aui:button type="cancel" onClick="<%= viewURL.toString() %>" />
     </aui:button-row>
 </aui:form>
+
+<h2>Collaborators</h2>
+
+<jsp:useBean id="studyCollaborators" class="java.util.ArrayList" scope="request"/>
+<jsp:useBean id="availableStudyCollaborators" class="java.util.ArrayList" scope="request"/>
+
+<portlet:actionURL name="addStudyCollaborator" var="addStudyCollaboratorURL" />
+
+<liferay-ui:search-container>
+    <liferay-ui:search-container-results results="<%= studyCollaborators %>" />
+
+    <liferay-ui:search-container-row
+            className="com.liferay.portal.kernel.model.Organization"
+            modelVar="organization">
+
+        <portlet:actionURL name="removeStudyCollaborator" var="removeStudyCollaboratorURL">
+            <portlet:param name="studyId" value="<%= String.valueOf(study.getId())%>"/>
+            <portlet:param name="collaboratorId" value="<%= String.valueOf(organization.getPrimaryKey())%>"/>
+        </portlet:actionURL>
+
+        <liferay-ui:search-container-column-text property="name" />
+        <liferay-ui:search-container-column-text>
+            <aui:button type="submit" value="Remove" onClick="<%= removeStudyCollaboratorURL.toString() %>" />
+        </liferay-ui:search-container-column-text>
+    </liferay-ui:search-container-row>
+
+    <liferay-ui:search-iterator />
+</liferay-ui:search-container>
+
+<c:if test="<%= availableStudyCollaborators.size() > 0 %>">
+
+<aui:form action="<%= addStudyCollaboratorURL %>" name="<portlet:namespace />collaboratorFm">
+    <aui:fieldset>
+        <aui:select label="Collaborator" name="collaboratorId">
+            <c:forEach items="${availableStudyCollaborators}" var="org">
+                <aui:option value="${org.primaryKey}">${org.name}</aui:option>
+            </c:forEach>
+        </aui:select>
+        <aui:input name="studyId" type="hidden" value="<%= study.getId() %>" />
+    </aui:fieldset>
+
+    <aui:button-row>
+        <aui:button type="submit" value="Add collaborator"/>
+    </aui:button-row>
+</aui:form>
+
+</c:if>
+
 
 <h2>Notebooks</h2>
 
@@ -64,10 +102,9 @@
         </portlet:renderURL>
 
         <liferay-ui:search-container-column-text property="id" href="<%= notebookDetailsURL %>"  />
-
+        <liferay-ui:search-container-column-text property="name" />
         <liferay-ui:search-container-column-text property="url" />
         <liferay-ui:search-container-column-text><a href="<%=notebook.getUrl()%>" target="_blank">Open</a></liferay-ui:search-container-column-text>
-
 
     </liferay-ui:search-container-row>
 

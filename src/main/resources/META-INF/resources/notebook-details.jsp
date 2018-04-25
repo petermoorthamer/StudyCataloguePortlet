@@ -14,6 +14,7 @@
 
 <aui:form action="<%= createOrSaveNotebookURL %>" name="<portlet:namespace />editNotebookFm">
     <aui:fieldset>
+        <aui:input name="notebookName" value="<%=notebook.getName()%>" />
         <aui:input name="notebookUrl" value="<%=notebook.getUrl()%>" />
         <aui:input name="notebookId" type="hidden" value="<%= notebook.getId() %>" />
         <aui:input name="studyId" type="hidden" value="<%= study.getId() %>" />

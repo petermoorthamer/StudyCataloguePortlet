@@ -57,6 +57,9 @@ public class Notebook implements Serializable {
     }
     public void setUrl(String url) {
         this.url = url;
+        if(this.externalId == null) {
+            setExternalId(parseExternalIdFromUrl());
+        }
     }
 
     public Calendar getModifiedDate() {

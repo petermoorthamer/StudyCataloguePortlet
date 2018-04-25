@@ -59,6 +59,8 @@ public class StudyCataloguePortlet extends MVCPortlet {
 
     public static final String STUDIES = "studies";
     public static final String STUDY = "study";
+    public static final String STUDY_COLLABORATORS = "studyCollaborators";
+    public static final String STUDY_COLLABORATORS_AVAILABLE = "availableStudyCollaborators";
     public static final String NOTEBOOK = "notebook";
     public static final String NOTEBOOK_STATISTICS = "notebookStatistics";
     public static final String SHARED_NOTEBOOK = "sharedNotebook";
@@ -102,7 +104,7 @@ public class StudyCataloguePortlet extends MVCPortlet {
         if(studyId <= 0) {
             prepareStudyListView(renderRequest);
         } else {
-            final Study study = prepareStudyView(renderRequest);
+            final Study study = prepareStudyView(organizations, renderRequest);
             if(study != null) {
                 final Notebook notebook = prepareNotebookView(study, renderRequest);
                 if(notebook != null) {
@@ -145,6 +147,18 @@ public class StudyCataloguePortlet extends MVCPortlet {
                 .collect(Collectors.toList());
     }
 
+    private List<Organization> getCollaborators(final Study study, final List<Organization> organisations) {
+        return organisations.stream()
+                .filter(org -> study.hasCollaborator(org.getPrimaryKey()))
+                .collect(Collectors.toList());
+    }
+
+    private List<Organization> getAvailableCollaborators(final Study study, final List<Organization> organisations) {
+        return organisations.stream()
+                .filter(org -> !study.hasCollaborator(org.getPrimaryKey()))
+                .collect(Collectors.toList());
+    }
+
     private List<Study> prepareStudyListView(final PortletRequest request) {
         final User loggedOnUser = getLoggedOnUser(request);
         final String keywords = ParamUtil.getString(request, "keywords");
@@ -164,12 +178,14 @@ public class StudyCataloguePortlet extends MVCPortlet {
         return studies;
     }
 
-	private Study prepareStudyView(final PortletRequest request) {
+	private Study prepareStudyView(final List<Organization> organizations, final PortletRequest request) {
         Long studyId = ParamUtil.getLong(request, "studyId");
         LOGGER.debug("StudyId: " + studyId);
         if(studyId > 0) {
             final Study study = studyServiceFacade.findStudyById(studyId);
             request.setAttribute(STUDY, study);
+            request.setAttribute(STUDY_COLLABORATORS, getCollaborators(study, organizations));
+            request.setAttribute(STUDY_COLLABORATORS_AVAILABLE, getAvailableCollaborators(study, organizations));
             return study;
         }
         return null;
@@ -237,17 +253,51 @@ public class StudyCataloguePortlet extends MVCPortlet {
         response.setRenderParameter("mvcPath", "/study-details.jsp");
     }
 
-	public void createOrSaveStudy(ActionRequest request, ActionResponse response) {
-		final Study study = new Study();
-		study.setId(ParamUtil.getLong(request, "studyId"));
-		study.setName(ParamUtil.getString(request, "studyName"));
-		study.setNumber(ParamUtil.getString(request, "studyNumber"));
-		study.setDescription(ParamUtil.getString(request, "studyDescription"));
-		study.setAcknowledgments(ParamUtil.getString(request, "studyAcknowledgments"));
-		study.setLeadUserId(ParamUtil.getLong(request, "studyLead"));
+    public void addStudyCollaborator(ActionRequest request, ActionResponse response) {
+        Long studyId = ParamUtil.getLong(request, "studyId");
+        LOGGER.debug("StudyId: " + studyId);
+        Long organizationId = ParamUtil.getLong(request, "collaboratorId");
+        LOGGER.info("CollaboratorId: " + organizationId);
+        if(organizationId > 0) {
+            LOGGER.info("addStudyCollaborator: " + organizationId);
+            final Study study = studyServiceFacade.findStudyById(studyId);
+            study.addCollaboratingOrganizationId(organizationId);
+            studyServiceFacade.saveStudy(study);
 
-		String[] collaboratorIds = ParamUtil.getStringValues(request, "collaborators");
-        study.setCollaboratorIds(collaboratorIds);
+            prepareStudyView(findOrganizations(), request);
+            response.setRenderParameter("mvcPath", "/study-details.jsp");
+
+        } else {
+            LOGGER.warn("No collaborator selected!");
+        }
+    }
+
+    public void removeStudyCollaborator(ActionRequest request, ActionResponse response) {
+        Long studyId = ParamUtil.getLong(request, "studyId");
+        LOGGER.debug("StudyId: " + studyId);
+        Long organizationId = ParamUtil.getLong(request, "collaboratorId");
+        LOGGER.info("CollaboratorId: " + organizationId);
+        if(organizationId > 0) {
+            LOGGER.info("removeStudyCollaborator: " + organizationId);
+            final Study study = studyServiceFacade.findStudyById(studyId);
+            study.removeCollaboratingOrganizationId(organizationId);
+            studyServiceFacade.saveStudy(study);
+
+            prepareStudyView(findOrganizations(), request);
+            response.setRenderParameter("mvcPath", "/study-details.jsp");
+        } else {
+            LOGGER.warn("No collaborator selected!");
+        }
+    }
+
+	public void createOrSaveStudy(ActionRequest request, ActionResponse response) {
+		Study study = new Study();
+        Long studyId = ParamUtil.getLong(request, "studyId");
+        if(studyId > 0) {
+            study = studyServiceFacade.findStudyById(studyId);
+        }
+
+        processChangesOnSubmit(study, request);
 		studyServiceFacade.createOrSaveStudy(study);
 
 		reIndexStudyIndex(study.getId());
@@ -255,6 +305,20 @@ public class StudyCataloguePortlet extends MVCPortlet {
         request.setAttribute(STUDY, study);
         response.setRenderParameter("mvcPath", "/study-details.jsp");
 	}
+
+	private Study processChangesOnSubmit(Study study, PortletRequest request) {
+        study.setId(ParamUtil.getLong(request, "studyId"));
+        study.setName(ParamUtil.getString(request, "studyName"));
+        study.setNumber(ParamUtil.getString(request, "studyNumber"));
+        study.setDescription(ParamUtil.getString(request, "studyDescription"));
+        study.setAcknowledgments(ParamUtil.getString(request, "studyAcknowledgments"));
+        study.setLeadUserId(ParamUtil.getLong(request, "studyLead"));
+
+        //String[] collaboratorIds = ParamUtil.getStringValues(request, "collaborators");
+        //study.setCollaboratorIds(collaboratorIds);
+
+        return study;
+    }
 
 	private void reIndexStudyIndex(Long studyId) {
         try {
@@ -346,12 +410,18 @@ public class StudyCataloguePortlet extends MVCPortlet {
         Study study = studyServiceFacade.findStudyById(studyId);
 
         Long notebookId = ParamUtil.getLong(request, "notebookId");
+        String notebookName = ParamUtil.getString(request, "notebookName");
         String notebookUrl = ParamUtil.getString(request, "notebookUrl");
-		Notebook notebook = new Notebook();
+
+        LOGGER.info("createOrSaveNotebook " + notebookName + ": " + notebookUrl);
+
+        final Notebook notebook = new Notebook();
         notebook.setId(notebookId);
+        notebook.setName(notebookName);
         notebook.setUrl(notebookUrl);
 
-        study.addNotebook(notebook);
+        boolean added = study.addNotebook(notebook);
+        LOGGER.info("Notebook added to study : " + added);
 
         studyServiceFacade.saveStudy(study);
 
