@@ -23,6 +23,7 @@ import java.util.Map;
 
 @Component(
         immediate = true,
+        property = { "indexer.class.name=com.jnj.honeur.catalogue.model.Study" },
         service = Indexer.class
 )
 public class StudyIndexer extends BaseIndexer<Study> {
@@ -39,7 +40,7 @@ public class StudyIndexer extends BaseIndexer<Study> {
     private StudyServiceFacade studyServiceFacade;
 
     public StudyIndexer() {
-        LOGGER.info("New StudyIndexer");
+        LOGGER.info("*** New StudyIndexer ***");
 
         setDefaultSelectedFieldNames(
                 Field.COMPANY_ID, Field.TITLE, Field.CONTENT,
@@ -72,6 +73,7 @@ public class StudyIndexer extends BaseIndexer<Study> {
         document.addKeyword(Field.GROUP_ID, GROUP_ID);
         document.addKeyword(Field.SCOPE_GROUP_ID, GROUP_ID);
         document.addKeyword(Field.STATUS, WorkflowConstants.STATUS_APPROVED);
+        document.addKeyword("visible", true);
 
         Locale defaultLocale = PortalUtil.getSiteDefaultLocale(GROUP_ID);
         String titleLocalizedField = LocalizationUtil.getLocalizedName(Field.TITLE, defaultLocale.toString());
@@ -96,9 +98,15 @@ public class StudyIndexer extends BaseIndexer<Study> {
             Document document, Locale locale, String snippet,
             PortletRequest portletRequest, PortletResponse portletResponse) {
 
-        LOGGER.info("doGetSummary: " + document);
+        LOGGER.info("doGetSummary - document: " + document);
+        LOGGER.info("doGetSummary - snippet: " + snippet);
 
-        Summary summary = createSummary(document);
+        String title = document.get("name");
+        String content = document.get("description");
+
+        //final Summary summary = createSummary(document);
+        final Summary summary = new Summary(title, content);
+        summary.setQueryTerms(null);
         summary.setMaxContentLength(200);
         return summary;
     }
@@ -145,11 +153,18 @@ public class StudyIndexer extends BaseIndexer<Study> {
     }
 
     @Override
+    public boolean isVisible(long classPK, int status) throws Exception {
+        return true;
+    }
+
+    @Override
     public void postProcessContextBooleanFilter(
             BooleanFilter contextBooleanFilter, SearchContext searchContext)
             throws Exception {
 
         LOGGER.info("postProcessContextBooleanFilter");
+        LOGGER.info("Search keywords: " + searchContext.getKeywords());
+        LOGGER.info("Search context: " + searchContext);
         addStatus(contextBooleanFilter, searchContext);
     }
 

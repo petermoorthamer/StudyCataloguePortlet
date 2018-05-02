@@ -2,6 +2,8 @@ package com.jnj.honeur.service;
 
 import com.jnj.honeur.catalogue.comparator.StudyComparator;
 import com.jnj.honeur.catalogue.model.Study;
+import com.liferay.asset.kernel.model.AssetEntry;
+import com.liferay.asset.kernel.model.AssetLinkConstants;
 import com.liferay.asset.kernel.service.AssetEntryLocalService;
 import com.liferay.asset.kernel.service.AssetLinkLocalService;
 import com.liferay.portal.kernel.exception.PortalException;
@@ -9,12 +11,13 @@ import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.search.Indexable;
 import com.liferay.portal.kernel.search.IndexableType;
 import com.liferay.portal.kernel.service.ServiceContext;
+import com.liferay.portal.kernel.util.ContentTypes;
 import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -33,7 +36,9 @@ public class StudyServiceFacade {
 
     private StudyCatalogueRestClient restClient = new StudyCatalogueRestClient(CATALOGUE_SERVER_BASE_URL + "/studies");
 
+    @Reference
     private AssetEntryLocalService assetEntryLocalService;
+    @Reference
     private AssetLinkLocalService assetLinkLocalService;
 
     @Indexable(type = IndexableType.REINDEX)
@@ -48,12 +53,19 @@ public class StudyServiceFacade {
     @Indexable(type = IndexableType.REINDEX)
     public Study createStudy(Study study) {
         LOGGER.info("Create study : " + study);
+        if(study.getUuid() == null) {
+            study.setUuid(UUID.randomUUID().toString());
+        }
+        if(study.getCreateDate() == null) {
+            study.setCreateDate(Calendar.getInstance());
+        }
         return restClient.createStudy(study);
     }
 
     @Indexable(type = IndexableType.REINDEX)
     public Study saveStudy(Study study) {
         LOGGER.info("Save study : " + study);
+        study.setModifiedDate(Calendar.getInstance());
         return restClient.saveStudy(study);
     }
 
@@ -71,7 +83,7 @@ public class StudyServiceFacade {
     }
 
     public List<Study> findStudies(final User user) {
-        LOGGER.info("findStudies for user " + user);
+        LOGGER.info("findStudies for user with id " + user.getPrimaryKey());
         if(user == null) {
             return Collections.emptyList();
         }
@@ -112,19 +124,60 @@ public class StudyServiceFacade {
     }
 
     public void addStudyAsset(Study study, long userId, long groupId, ServiceContext serviceContext) throws PortalException {
-        /*AssetEntry assetEntry = assetEntryLocalService.updateEntry(userId,
-                groupId, study.getCreateDate(), study.getModifiedDate(),
+        LOGGER.info("Add asset for study with id " + study.getId());
+        final Date createDate = study.getCreateDate() != null ? study.getCreateDate().getTime() : null;
+        final Date modifiedDate = study.getModifiedDate() != null ? study.getModifiedDate().getTime() : null;
+        AssetEntry assetEntry = assetEntryLocalService.updateEntry(userId,
+                groupId, createDate, modifiedDate,
                 Study.class.getName(), study.getId(), study.getUuid(), 0,
                 serviceContext.getAssetCategoryIds(),
-                serviceContext.getAssetTagNames(), true, true, null, null, null, null,
-                ContentTypes.TEXT_HTML, study.getName(), null, null, null,
+                serviceContext.getAssetTagNames(), true, true, null, null, null,
+                ContentTypes.TEXT_HTML, study.getName(), study.getDescription(), null, null,
                 null, 0, 0, null);
 
 
-            assetLinkLocalService.updateLinks(userId, assetEntry.getEntryId(),
-                    serviceContext.getAssetLinkEntryIds(),
-                    AssetLinkConstants.TYPE_RELATED);
-        */
+        assetLinkLocalService.updateLinks(userId, assetEntry.getEntryId(),
+                serviceContext.getAssetLinkEntryIds(),
+                AssetLinkConstants.TYPE_RELATED);
+
+    }
+
+    public void updateStudyAsset(Study study, long userId, long groupId, ServiceContext serviceContext) throws PortalException {
+        LOGGER.info("Update asset for study with id " + study.getId());
+        final Date createDate = study.getCreateDate() != null ? study.getCreateDate().getTime() : null;
+        final Date modifiedDate = study.getModifiedDate() != null ? study.getModifiedDate().getTime() : null;
+        AssetEntry assetEntry = assetEntryLocalService.updateEntry(userId,
+                serviceContext.getScopeGroupId(),
+                createDate, modifiedDate,
+                Study.class.getName(), study.getId(), study.getUuid(),
+                0, serviceContext.getAssetCategoryIds(),
+                serviceContext.getAssetTagNames(), true, true,
+                createDate, null, null,
+                ContentTypes.TEXT_HTML, study.getName(), study.getDescription(),
+                null, null, null, 0, 0,
+                serviceContext.getAssetPriority());
+
+        assetLinkLocalService.updateLinks(userId, assetEntry.getEntryId(),
+                serviceContext.getAssetLinkEntryIds(),
+                AssetLinkConstants.TYPE_RELATED);
+    }
+
+    public void deleteStudyAsset(Long studyId) throws PortalException  {
+        LOGGER.info("Delete asset for study with id " + studyId);
+        AssetEntry assetEntry = assetEntryLocalService.fetchEntry(
+                Study.class.getName(), studyId);
+
+        assetLinkLocalService.deleteLinks(assetEntry.getEntryId());
+
+        assetEntryLocalService.deleteEntry(assetEntry);
+    }
+
+    public List<Study> findByStatus(int status) {
+        return findStudies();
+    }
+
+    public List<Study> findByGroupId(long groupId, int status) {
+        return findStudies();
     }
 
 }

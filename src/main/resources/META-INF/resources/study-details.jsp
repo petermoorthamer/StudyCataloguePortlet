@@ -1,5 +1,9 @@
 <%@ include file="/init.jsp" %>
 
+<liferay-ui:success key="studySaved" message="study-saved" />
+<liferay-ui:success key="notebookSaved" message="notebook-saved" />
+
+
 <h1>Study details</h1>
 
 <jsp:useBean id="study" class="com.jnj.honeur.catalogue.model.Study" scope="request"/>
@@ -20,8 +24,12 @@
 
 <aui:form action="<%= createOrSaveStudyURL %>" name="<portlet:namespace />studyfm">
     <aui:fieldset>
-        <aui:input label="Name" name="studyName" value="<%=study.getName()%>" />
-        <aui:input label="Number" name="studyNumber" value="<%=study.getNumber()%>" />
+        <aui:input label="Name" name="studyName" value="<%=study.getName()%>">
+            <aui:validator name="required" />
+        </aui:input>
+        <aui:input label="Number" name="studyNumber" value="<%=study.getNumber()%>">
+            <aui:validator name="required" />
+        </aui:input>
         <aui:input label="Description" name="studyDescription" value="<%=study.getDescription()%>" />
         <aui:input label="Acknowledgments" name="studyAcknowledgments" value="<%=study.getAcknowledgments()%>" />
         <aui:select label="Study Lead" name="studyLead" value="<%=study.getLeadUserId()%>">
@@ -37,6 +45,8 @@
         <aui:button type="cancel" onClick="<%= viewURL.toString() %>" />
     </aui:button-row>
 </aui:form>
+
+<c:if test="<%= study.getId() != null %>">
 
 <h2>Collaborators</h2>
 
@@ -117,3 +127,5 @@
 <h2>Documents</h2>
 
 <p><i>TODO</i></p>
+
+</c:if>

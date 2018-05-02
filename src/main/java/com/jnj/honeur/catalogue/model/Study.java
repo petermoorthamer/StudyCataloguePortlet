@@ -13,12 +13,15 @@ public class Study implements Serializable {
     private static final String ID_SEPARATOR = ",";
 
     private Long id;
+    private String uuid;
     private String name;
     private String number;
     private String description;
     private String acknowledgments;
     private Long leadUserId;
     private String collaboratingOrganizationIds;
+    private Long creatorUserId;
+    private Calendar createDate;
     private Calendar modifiedDate;
     private Set<Notebook> notebooks = new HashSet<>();
 
@@ -27,6 +30,13 @@ public class Study implements Serializable {
     }
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public String getUuid() {
+        return uuid;
+    }
+    public void setUuid(String uuid) {
+        this.uuid = uuid;
     }
 
     public String getName() {
@@ -110,6 +120,20 @@ public class Study implements Serializable {
     }
     public boolean hasCollaborator(Long collaboratorId) {
         return hasCollaborator(collaboratorId.toString());
+    }
+
+    public Long getCreatorUserId() {
+        return creatorUserId;
+    }
+    public void setCreatorUserId(Long creatorUserId) {
+        this.creatorUserId = creatorUserId;
+    }
+
+    public Calendar getCreateDate() {
+        return createDate;
+    }
+    public void setCreateDate(Calendar createDate) {
+        this.createDate = createDate;
     }
 
     public Calendar getModifiedDate() {
