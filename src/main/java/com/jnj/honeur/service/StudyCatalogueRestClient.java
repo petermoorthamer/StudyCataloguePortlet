@@ -47,12 +47,14 @@ public class StudyCatalogueRestClient {
     }
 
     public Study findStudyById(final Long studyId) {
+        LOGGER.info("findStudyById: " + apiUrl + "/" + studyId);
         RestTemplate restTemplate = new RestTemplate();
         ResponseEntity<Study> studyResponse = restTemplate.getForEntity(apiUrl + "/" + studyId, Study.class);
         return studyResponse.getBody();
     }
 
     public List<Study> findAllStudies() {
+        LOGGER.info("findAllStudies on " + apiUrl);
         RestTemplate restTemplate = new RestTemplate();
         ResponseEntity<Study[]>  studiesResponse = restTemplate.getForEntity(apiUrl, Study[].class);
         Study[] studies = studiesResponse.getBody();
@@ -67,5 +69,19 @@ public class StudyCatalogueRestClient {
         String path = uri.getPath();
         return Long.valueOf(path.substring(path.lastIndexOf("/") + 1));
     }
+
+    /*public SharedNotebook saveSharedNotebook(final SharedNotebook sharedNotebook) {
+        RestTemplate restTemplate = new RestTemplate();
+        HttpEntity<SharedNotebook> request = new HttpEntity<>(sharedNotebook);
+        LOGGER.info("Notebook ID: " + sharedNotebook.getNotebook().getId());
+        LOGGER.info("Study ID: " + sharedNotebook.getNotebook().getStudy().getId());
+        Long studyId = sharedNotebook.getNotebook().getStudy().getId();
+        Long notebookId = sharedNotebook.getNotebook().getId();
+        String serviceUrl = apiUrl + "/" + studyId + "/" + notebookId + "/" + sharedNotebook.getUuid();
+        LOGGER.info("saveSharedNotebook: " + serviceUrl);
+        URI location = restTemplate.postForLocation(serviceUrl, request);
+        sharedNotebook.setId(parseId(location));
+        return sharedNotebook;
+    }*/
 
 }
