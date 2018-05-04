@@ -46,9 +46,15 @@ public class StudyServiceFacade {
         String catalogueServerBaseUrl = System.getenv("CATALOGUE_SERVER_BASE_URL");
         LOGGER.info("CATALOGUE_SERVER_BASE_URL env. variable: " + catalogueServerBaseUrl);
         if(catalogueServerBaseUrl == null) {
-            final Configuration configuration = ConfigurationFactoryUtil.getConfiguration(PortalClassLoaderUtil.getClassLoader(), "portlet");
-            catalogueServerBaseUrl = configuration.get("CATALOGUE_SERVER_BASE_URL");
-            LOGGER.info("CATALOGUE_SERVER_BASE_URL portlet property: " + catalogueServerBaseUrl);
+            ClassLoader classLoader = PortalClassLoaderUtil.getClassLoader();
+            if(classLoader != null) {
+                final Configuration configuration = ConfigurationFactoryUtil.getConfiguration(PortalClassLoaderUtil.getClassLoader(), "portlet");
+                catalogueServerBaseUrl = configuration.get("CATALOGUE_SERVER_BASE_URL");
+                LOGGER.info("CATALOGUE_SERVER_BASE_URL portlet property: " + catalogueServerBaseUrl);
+            }
+        }
+        if(catalogueServerBaseUrl == null) {
+            LOGGER.warn("CATALOGUE_SERVER_BASE_URL could not be resolved!");
         }
         return catalogueServerBaseUrl;
     }
