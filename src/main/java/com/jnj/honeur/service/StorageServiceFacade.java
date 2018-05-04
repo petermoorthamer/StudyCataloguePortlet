@@ -6,6 +6,9 @@ import com.jnj.honeur.catalogue.model.SharedNotebookResult;
 import com.jnj.honeur.catalogue.model.Study;
 import com.jnj.honeur.storage.model.StorageFileInfo;
 import com.jnj.honeur.storage.model.StorageLogEntry;
+import com.liferay.portal.kernel.configuration.Configuration;
+import com.liferay.portal.kernel.configuration.ConfigurationFactoryUtil;
+import com.liferay.portal.kernel.util.PortalClassLoaderUtil;
 import org.osgi.service.component.annotations.Component;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,9 +29,19 @@ public class StorageServiceFacade {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(StorageServiceFacade.class);
 
-    private static final String STORAGE_SERVER_BASE_URL = System.getenv("STORAGE_SERVER_BASE_URL"); // https://localhost:8445
+    private static final Configuration configuration = ConfigurationFactoryUtil.getConfiguration(PortalClassLoaderUtil.getClassLoader(), "portlet");
 
-    private StorageServiceRestClient restClient = new StorageServiceRestClient(STORAGE_SERVER_BASE_URL);
+    private StorageServiceRestClient restClient = new StorageServiceRestClient(getStorageServerBaseUrl());
+
+    private static String getStorageServerBaseUrl() {
+        String storageServerBaseUrl = System.getenv("STORAGE_SERVER_BASE_URL");
+        LOGGER.info("STORAGE_SERVER_BASE_URL env. variable: " + storageServerBaseUrl);
+        if(storageServerBaseUrl == null) {
+            storageServerBaseUrl = configuration.get("STORAGE_SERVER_BASE_URL");
+            LOGGER.info("STORAGE_SERVER_BASE_URL portlet property: " + storageServerBaseUrl);
+        }
+        return storageServerBaseUrl;
+    }
 
     private List<StorageFileInfo> getStudyNotebooks(final Long studyId) {
         return restClient.getStudyNotebooks(studyId);
@@ -86,7 +99,7 @@ public class StorageServiceFacade {
     }
 
     private String getFileDownloadUrl(final String uuid) {
-        return STORAGE_SERVER_BASE_URL + "/file/" + uuid;
+        return getStorageServerBaseUrl() + "/file/" + uuid;
     }
 
 

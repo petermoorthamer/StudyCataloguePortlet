@@ -6,12 +6,15 @@ import com.liferay.asset.kernel.model.AssetEntry;
 import com.liferay.asset.kernel.model.AssetLinkConstants;
 import com.liferay.asset.kernel.service.AssetEntryLocalService;
 import com.liferay.asset.kernel.service.AssetLinkLocalService;
+import com.liferay.portal.kernel.configuration.Configuration;
+import com.liferay.portal.kernel.configuration.ConfigurationFactoryUtil;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.search.Indexable;
 import com.liferay.portal.kernel.search.IndexableType;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.util.ContentTypes;
+import com.liferay.portal.kernel.util.PortalClassLoaderUtil;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 import org.slf4j.Logger;
@@ -32,14 +35,23 @@ public class StudyServiceFacade {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(StudyServiceFacade.class.getName());
 
-    private static final String CATALOGUE_SERVER_BASE_URL = System.getenv("CATALOGUE_SERVER_BASE_URL"); // https://localhost:8448
-
-    private StudyCatalogueRestClient restClient = new StudyCatalogueRestClient(CATALOGUE_SERVER_BASE_URL + "/studies");
+    private StudyCatalogueRestClient restClient = new StudyCatalogueRestClient(getCatalogueServerBaseUrl() + "/studies");
 
     @Reference
     private AssetEntryLocalService assetEntryLocalService;
     @Reference
     private AssetLinkLocalService assetLinkLocalService;
+
+    private static String getCatalogueServerBaseUrl() {
+        String catalogueServerBaseUrl = System.getenv("CATALOGUE_SERVER_BASE_URL");
+        LOGGER.info("CATALOGUE_SERVER_BASE_URL env. variable: " + catalogueServerBaseUrl);
+        if(catalogueServerBaseUrl == null) {
+            final Configuration configuration = ConfigurationFactoryUtil.getConfiguration(PortalClassLoaderUtil.getClassLoader(), "portlet");
+            catalogueServerBaseUrl = configuration.get("CATALOGUE_SERVER_BASE_URL");
+            LOGGER.info("CATALOGUE_SERVER_BASE_URL portlet property: " + catalogueServerBaseUrl);
+        }
+        return catalogueServerBaseUrl;
+    }
 
     @Indexable(type = IndexableType.REINDEX)
     public Study createOrSaveStudy(final Study study) {
@@ -172,12 +184,8 @@ public class StudyServiceFacade {
         assetEntryLocalService.deleteEntry(assetEntry);
     }
 
-    public List<Study> findByStatus(int status) {
-        return findStudies();
-    }
-
-    public List<Study> findByGroupId(long groupId, int status) {
-        return findStudies();
-    }
+    /*public SharedNotebook saveSharedNotebook(final SharedNotebook sharedNotebook) {
+        return restClient.saveSharedNotebook(sharedNotebook);
+    }*/
 
 }
