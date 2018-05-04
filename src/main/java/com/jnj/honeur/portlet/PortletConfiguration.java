@@ -48,12 +48,12 @@ public class PortletConfiguration {
     private static String getProperty(String propertyName) {
         String propertyValue = System.getenv(propertyName);
         LOGGER.info(String.format("Environment variable %s = %s", propertyName, propertyValue));
-        if(propertyValue == null && getConfiguration() != null) {
-            propertyValue = getConfiguration().get(propertyName);
-            LOGGER.info(String.format("Portlet property %s = %s", propertyName, propertyValue));
-        }
         if(propertyValue == null && getProperties() != null) {
             propertyValue = getProperties().getProperty(propertyName);
+            LOGGER.info(String.format("Portlet property %s = %s", propertyName, propertyValue));
+        }
+        if(propertyValue == null && getConfiguration() != null) {
+            propertyValue = getConfiguration().get(propertyName);
             LOGGER.info(String.format("Portlet property %s = %s", propertyName, propertyValue));
         }
         if(propertyValue == null) {
