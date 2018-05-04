@@ -4,6 +4,7 @@ import com.jnj.honeur.catalogue.model.Notebook;
 import com.jnj.honeur.catalogue.model.SharedNotebook;
 import com.jnj.honeur.catalogue.model.SharedNotebookResult;
 import com.jnj.honeur.catalogue.model.Study;
+import com.jnj.honeur.portlet.PortletConfiguration;
 import com.jnj.honeur.storage.model.StorageFileInfo;
 import com.jnj.honeur.storage.model.StorageLogEntry;
 import com.liferay.portal.kernel.configuration.Configuration;
@@ -34,13 +35,7 @@ public class StorageServiceFacade {
     private StorageServiceRestClient restClient = new StorageServiceRestClient(getStorageServerBaseUrl());
 
     private static String getStorageServerBaseUrl() {
-        String storageServerBaseUrl = System.getenv("STORAGE_SERVER_BASE_URL");
-        LOGGER.info("STORAGE_SERVER_BASE_URL env. variable: " + storageServerBaseUrl);
-        if(storageServerBaseUrl == null) {
-            storageServerBaseUrl = configuration.get("STORAGE_SERVER_BASE_URL");
-            LOGGER.info("STORAGE_SERVER_BASE_URL portlet property: " + storageServerBaseUrl);
-        }
-        return storageServerBaseUrl;
+        return PortletConfiguration.getStorageServerBaseUrl();
     }
 
     private List<StorageFileInfo> getStudyNotebooks(final Long studyId) {

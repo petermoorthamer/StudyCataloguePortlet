@@ -2,19 +2,17 @@ package com.jnj.honeur.service;
 
 import com.jnj.honeur.catalogue.comparator.StudyComparator;
 import com.jnj.honeur.catalogue.model.Study;
+import com.jnj.honeur.portlet.PortletConfiguration;
 import com.liferay.asset.kernel.model.AssetEntry;
 import com.liferay.asset.kernel.model.AssetLinkConstants;
 import com.liferay.asset.kernel.service.AssetEntryLocalService;
 import com.liferay.asset.kernel.service.AssetLinkLocalService;
-import com.liferay.portal.kernel.configuration.Configuration;
-import com.liferay.portal.kernel.configuration.ConfigurationFactoryUtil;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.search.Indexable;
 import com.liferay.portal.kernel.search.IndexableType;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.util.ContentTypes;
-import com.liferay.portal.kernel.util.PortalClassLoaderUtil;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 import org.slf4j.Logger;
@@ -43,20 +41,7 @@ public class StudyServiceFacade {
     private AssetLinkLocalService assetLinkLocalService;
 
     private static String getCatalogueServerBaseUrl() {
-        String catalogueServerBaseUrl = System.getenv("CATALOGUE_SERVER_BASE_URL");
-        LOGGER.info("CATALOGUE_SERVER_BASE_URL env. variable: " + catalogueServerBaseUrl);
-        if(catalogueServerBaseUrl == null) {
-            ClassLoader classLoader = PortalClassLoaderUtil.getClassLoader();
-            if(classLoader != null) {
-                final Configuration configuration = ConfigurationFactoryUtil.getConfiguration(PortalClassLoaderUtil.getClassLoader(), "portlet");
-                catalogueServerBaseUrl = configuration.get("CATALOGUE_SERVER_BASE_URL");
-                LOGGER.info("CATALOGUE_SERVER_BASE_URL portlet property: " + catalogueServerBaseUrl);
-            }
-        }
-        if(catalogueServerBaseUrl == null) {
-            LOGGER.warn("CATALOGUE_SERVER_BASE_URL could not be resolved!");
-        }
-        return catalogueServerBaseUrl;
+        return PortletConfiguration.getCatalogueServerBaseUrl();
     }
 
     @Indexable(type = IndexableType.REINDEX)
