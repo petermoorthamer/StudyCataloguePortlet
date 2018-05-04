@@ -40,21 +40,11 @@ public class PortletConfiguration {
     }
 
     public static String getCatalogueServerBaseUrl() {
-        String catalogueServerBaseUrl = getProperty("CATALOGUE_SERVER_BASE_URL");
-        if(catalogueServerBaseUrl == null) {
-            catalogueServerBaseUrl = "https://dev.honeur.org/catalogue";
-            LOGGER.warn("CATALOGUE_SERVER_BASE_URL: fallback to " + catalogueServerBaseUrl);
-        }
-        return catalogueServerBaseUrl;
+        return getProperty("CATALOGUE_SERVER_BASE_URL");
     }
 
     public static String getStorageServerBaseUrl() {
-        String storageServerBaseUrl = getProperty("STORAGE_SERVER_BASE_URL");
-        if(storageServerBaseUrl == null) {
-            storageServerBaseUrl = "https://dev.honeur.org/storage";
-            LOGGER.warn("STORAGE_SERVER_BASE_URL: fallback to " + storageServerBaseUrl);
-        }
-        return storageServerBaseUrl;
+        return getProperty("STORAGE_SERVER_BASE_URL");
     }
 
 }
