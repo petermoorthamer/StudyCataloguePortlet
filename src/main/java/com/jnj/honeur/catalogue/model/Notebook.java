@@ -18,8 +18,8 @@ public class Notebook implements Serializable {
     private String url;
     private Calendar modifiedDate;
     private Study study;
-
-    private List<SharedNotebook> sharedNotebookList = new ArrayList<>();
+    private String resultSummary;
+    private Set<SharedNotebook> sharedNotebooks = new LinkedHashSet<>();
 
     public Long getId() {
         return id;
@@ -76,12 +76,17 @@ public class Notebook implements Serializable {
         this.study = study;
     }
 
-    public List<SharedNotebook> getSharedNotebookList() {
-        initSharedNotebookVersions();
-        return sharedNotebookList;
+    public Set<SharedNotebook> getSharedNotebooks() {
+        return sharedNotebooks;
     }
-    public void setSharedNotebookList(List<SharedNotebook> sharedNotebookList) {
-        this.sharedNotebookList = sharedNotebookList;
+    public void setSharedNotebooks(Set<SharedNotebook> sharedNotebooks) {
+        this.sharedNotebooks = sharedNotebooks;
+    }
+
+    public List<SharedNotebook> getSharedNotebookList() {
+        final List<SharedNotebook> sharedNotebookList = new ArrayList<>(sharedNotebooks);
+        initSharedNotebookVersions(sharedNotebookList);
+        return sharedNotebookList;
     }
 
     public Optional<SharedNotebook> findSharedNotebook(final String notebookUuid) {
@@ -89,15 +94,22 @@ public class Notebook implements Serializable {
     }
 
     public boolean isShared() {
-        return !sharedNotebookList.isEmpty();
+        return !sharedNotebooks.isEmpty();
     }
 
-    private void initSharedNotebookVersions() {
+    private void initSharedNotebookVersions(final List<SharedNotebook> sharedNotebookList) {
         sharedNotebookList.sort(new SharedNotebookComparator());
         int version = 1;
         for(SharedNotebook sn:sharedNotebookList) {
             sn.setVersion(SharedNotebook.VERSION_PREFIX + version++);
         }
+    }
+
+    public String getResultSummary() {
+        return resultSummary;
+    }
+    public void setResultSummary(String resultSummary) {
+        this.resultSummary = resultSummary;
     }
 
     @Override

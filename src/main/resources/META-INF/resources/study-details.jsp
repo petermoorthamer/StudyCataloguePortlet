@@ -27,15 +27,16 @@
         <aui:input label="Name" name="studyName" value="<%=study.getName()%>">
             <aui:validator name="required" />
         </aui:input>
-        <aui:input label="Number" name="studyNumber" value="<%=study.getNumber()%>">
+        <aui:input label="Number" name="studyNumber" value="<%=study.getNumber()%>" />
+        <aui:input label="Description" name="studyDescription" value="<%=study.getDescription()%>">
             <aui:validator name="required" />
         </aui:input>
-        <aui:input label="Description" name="studyDescription" value="<%=study.getDescription()%>" />
         <aui:input label="Acknowledgments" name="studyAcknowledgments" value="<%=study.getAcknowledgments()%>" />
         <aui:select label="Study Lead" name="studyLead" value="<%=study.getLeadUserId()%>">
             <c:forEach items="${users}" var="usr">
                 <aui:option value="${usr.primaryKey}">${usr.fullName}</aui:option>
             </c:forEach>
+            <aui:validator name="required" />
         </aui:select>
         <aui:input name="studyId" type="hidden" value="<%= study.getId() %>" />
     </aui:fieldset>
@@ -114,6 +115,7 @@
         <liferay-ui:search-container-column-text property="id" href="<%= notebookDetailsURL %>"  />
         <liferay-ui:search-container-column-text property="name" />
         <liferay-ui:search-container-column-text property="url" />
+        <liferay-ui:search-container-column-text property="resultSummary" name="Shared/Responded"> </liferay-ui:search-container-column-text>
         <liferay-ui:search-container-column-text><a href="<%=notebook.getUrl()%>" target="_blank">Open</a></liferay-ui:search-container-column-text>
 
     </liferay-ui:search-container-row>
@@ -126,6 +128,14 @@
 
 <h2>Documents</h2>
 
-<p><i>TODO</i></p>
+<aui:form enctype="multipart/form-data" name="<portlet:namespace />uploadDocumentFm">
+    <aui:fieldset>
+        <aui:input type="file" name="file" />
+    </aui:fieldset>
+
+    <aui:button-row>
+        <aui:button type="submit" value="Upload Document" />
+    </aui:button-row>
+</aui:form>
 
 </c:if>

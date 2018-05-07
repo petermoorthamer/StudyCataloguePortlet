@@ -20,6 +20,15 @@ public abstract class AbstractStorageFile {
     public String getUuid() {
         return storageFileInfo.getUuid();
     }
+    public void setUuid(String uuid) {
+        if(storageFileInfo != null && storageFileInfo.getUuid() != null) {
+            throw new IllegalStateException("UUID cannot be modified!");
+        }
+        if(storageFileInfo == null) {
+            storageFileInfo = new StorageFileInfo();
+        }
+        storageFileInfo.setUuid(uuid);
+    }
 
     public String getFilename() {
         return storageFileInfo.getOriginalFilename();

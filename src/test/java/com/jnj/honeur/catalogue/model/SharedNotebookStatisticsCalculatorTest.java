@@ -61,7 +61,7 @@ public class SharedNotebookStatisticsCalculatorTest {
         sharedNotebook.addNotebookResult(notebookResult1);
         sharedNotebook.addNotebookResult(notebookResult2);
 
-        notebook.setSharedNotebookList(Collections.singletonList(sharedNotebook));
+        notebook.setSharedNotebooks(Collections.singleton(sharedNotebook));
 
         calculator = new SharedNotebookStatisticsCalculator(notebook, organizations, users);
     }

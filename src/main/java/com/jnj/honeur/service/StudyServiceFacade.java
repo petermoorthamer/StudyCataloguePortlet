@@ -1,6 +1,7 @@
 package com.jnj.honeur.service;
 
 import com.jnj.honeur.catalogue.comparator.StudyComparator;
+import com.jnj.honeur.catalogue.model.SharedNotebook;
 import com.jnj.honeur.catalogue.model.Study;
 import com.jnj.honeur.portlet.PortletConfiguration;
 import com.liferay.asset.kernel.model.AssetEntry;
@@ -175,8 +176,8 @@ public class StudyServiceFacade {
         assetEntryLocalService.deleteEntry(assetEntry);
     }
 
-    /*public SharedNotebook saveSharedNotebook(final SharedNotebook sharedNotebook) {
+    public SharedNotebook saveSharedNotebook(final SharedNotebook sharedNotebook) {
         return restClient.saveSharedNotebook(sharedNotebook);
-    }*/
+    }
 
 }

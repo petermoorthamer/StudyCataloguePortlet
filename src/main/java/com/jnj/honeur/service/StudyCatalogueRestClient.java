@@ -1,5 +1,6 @@
 package com.jnj.honeur.service;
 
+import com.jnj.honeur.catalogue.model.SharedNotebook;
 import com.jnj.honeur.catalogue.model.Study;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -70,7 +71,7 @@ public class StudyCatalogueRestClient {
         return Long.valueOf(path.substring(path.lastIndexOf("/") + 1));
     }
 
-    /*public SharedNotebook saveSharedNotebook(final SharedNotebook sharedNotebook) {
+    public SharedNotebook saveSharedNotebook(final SharedNotebook sharedNotebook) {
         RestTemplate restTemplate = new RestTemplate();
         HttpEntity<SharedNotebook> request = new HttpEntity<>(sharedNotebook);
         LOGGER.info("Notebook ID: " + sharedNotebook.getNotebook().getId());
@@ -82,6 +83,6 @@ public class StudyCatalogueRestClient {
         URI location = restTemplate.postForLocation(serviceUrl, request);
         sharedNotebook.setId(parseId(location));
         return sharedNotebook;
-    }*/
+    }
 
 }

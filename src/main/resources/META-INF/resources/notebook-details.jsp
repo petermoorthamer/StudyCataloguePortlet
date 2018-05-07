@@ -59,6 +59,7 @@
         <liferay-ui:search-container-column-text name="Version" property="version"  />
         <liferay-ui:search-container-column-text name="Created By" property="createdBy" />
         <liferay-ui:search-container-column-text name="Creation Date" property="creationDate" />
+        <liferay-ui:search-container-column-text name="Shared/Responded" property="resultSummary" />
         <liferay-ui:search-container-column-text>
             <aui:button type="submit" value="Delete" onClick="<%= deleteSharedNotebookURL.toString() %>" />
         </liferay-ui:search-container-column-text>

@@ -11,10 +11,21 @@ import java.util.Optional;
 public class SharedNotebook extends AbstractStorageFile {
 
     public static final String VERSION_PREFIX = "V";
+    private static final String ID_SEPARATOR = ",";
 
+    private Long id;
     private Notebook notebook;
+    private String sharedOrganizationIds;
     private String version = "";
+    private String resultSummary;
     private List<SharedNotebookResult> notebookResults = new ArrayList<>();
+
+    public Long getId() {
+        return id;
+    }
+    public void setId(Long id) {
+        this.id = id;
+    }
 
     public Notebook getNotebook() {
         return notebook;
@@ -23,11 +34,29 @@ public class SharedNotebook extends AbstractStorageFile {
         this.notebook = notebook;
     }
 
+    public String getSharedOrganizationIds() {
+        return sharedOrganizationIds;
+    }
+    public void setSharedOrganizationIds(String sharedOrganizationIds) {
+        this.sharedOrganizationIds = sharedOrganizationIds;
+    }
+
+    public boolean isSharedWith(String organizationId) {
+        return sharedOrganizationIds != null && sharedOrganizationIds.contains(organizationId);
+    }
+
     public String getVersion() {
         return version;
     }
     public void setVersion(String version) {
         this.version = version;
+    }
+
+    public String getResultSummary() {
+        return resultSummary;
+    }
+    public void setResultSummary(String resultSummary) {
+        this.resultSummary = resultSummary;
     }
 
     public List<SharedNotebookResult> getNotebookResults() {

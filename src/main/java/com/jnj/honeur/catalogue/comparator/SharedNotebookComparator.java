@@ -12,7 +12,12 @@ public class SharedNotebookComparator implements Comparator<SharedNotebook> {
 
     @Override
     public int compare(SharedNotebook n1, SharedNotebook n2) {
-        return n1.getCreationDate().compareTo(n2.getCreationDate());
+        if(n1.getCreationDate() != null && n2.getCreationDate() != null) {
+            return n1.getCreationDate().compareTo(n2.getCreationDate());
+        } else if(n1.getId() != null && n2.getId() != null) {
+            return n1.getId().compareTo(n2.getId());
+        }
+        return 1;
     }
 
 }

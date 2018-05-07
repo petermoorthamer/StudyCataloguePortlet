@@ -35,10 +35,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -230,7 +227,8 @@ public class StudyCataloguePortlet extends MVCPortlet {
             if(notebookOptional.isPresent()) {
                 try {
                     final Notebook notebook = notebookOptional.get();
-                    notebook.setSharedNotebookList(storageServiceFacade.getSharedStudyNotebooks(study, notebook));
+                    LOGGER.info("Shared notebooks: " + notebook.getSharedNotebookList());
+                    notebook.setSharedNotebooks(retrieveSharedNotebooks(study, notebook));
                     request.setAttribute(NOTEBOOK, notebook);
                     return notebook;
                 } catch (Exception e) {
@@ -243,6 +241,22 @@ public class StudyCataloguePortlet extends MVCPortlet {
             }
         }
         return null;
+    }
+
+    private Set<SharedNotebook> retrieveSharedNotebooks(final Study study, final Notebook notebook) {
+        final Set<SharedNotebook> sharedNotebooks = new HashSet<>();
+        final List<SharedNotebook> sharedNotebookList = storageServiceFacade.getSharedStudyNotebooks(study, notebook);
+        for(SharedNotebook sn:sharedNotebookList) {
+            Optional<SharedNotebook> sharedNotebook = notebook.findSharedNotebook(sn.getUuid());
+            if(!sharedNotebook.isPresent()) {
+                LOGGER.warn("Notebook found on HSS that is not linked to the study notebook!");
+                continue;
+            }
+            sn.setSharedOrganizationIds(sharedNotebook.get().getSharedOrganizationIds());
+            sn.setId(sharedNotebook.get().getId());
+            sharedNotebooks.add(sn);
+        }
+        return sharedNotebooks;
     }
 
     private List<SharedNotebookStatistics> prepareSharedNotebookStatistics(final Notebook notebook, final List<Organization> organizations, final List<User> users, final PortletRequest request) {
@@ -536,11 +550,28 @@ public class StudyCataloguePortlet extends MVCPortlet {
             String notebookUuid = storageServiceFacade.shareStudyNotebook(study.getId(), notebook.get());
             LOGGER.info("Notebook UUID: " + notebookUuid);
 
+            studyServiceFacade.saveSharedNotebook(createSharedNotebook(study, notebook.get(), notebookUuid));
+
+            //prepareNotebookView(study, request);
+
             response.setRenderParameter("mvcPath", "/notebook-details.jsp");
         } catch (Exception e) {
             LOGGER.error(e.getMessage(), e);
             SessionErrors.add(request, e.getClass().getName());
         }
+    }
+
+    private SharedNotebook createSharedNotebook(final Study study, final Notebook notebook, String sharedNotebookUuid) {
+        final SharedNotebook sharedNotebook = new SharedNotebook();
+        if(notebook.getStudy() == null) {
+            Study notebookStudy = new Study();
+            notebookStudy.setId(study.getId());
+            notebook.setStudy(notebookStudy);
+        }
+        sharedNotebook.setNotebook(notebook);
+        sharedNotebook.setUuid(sharedNotebookUuid);
+
+        return sharedNotebook;
     }
 
     public void deleteSharedNotebook(ActionRequest request, ActionResponse response) {
